@@ -4,11 +4,11 @@ import queue
 
 from PySide2.QtWidgets import *
 from PySide2 import QtCore, QtWidgets
+from PySide2.QtCore import *
 from enum import Enum
-from serializer import Serializer
+import serializer
 from threading import Thread
 from time import sleep
-
 
 
 class Codes(Enum):
@@ -26,6 +26,7 @@ class Codes(Enum):
 
 to_send = False
 
+
 class Worker(QtCore.QRunnable):
 
     def __init__(self, fn, *args, **kwargs):
@@ -38,7 +39,7 @@ class Worker(QtCore.QRunnable):
 
     def run(self):
         try:
-            result = self.fn(*self.args, **self.kwargs)
+            result = self.fn()
         except:
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
@@ -50,9 +51,10 @@ class Worker(QtCore.QRunnable):
 
 
 class WorkerSignals(QtCore.QObject):
-
-    finished = QtCore.Signal()
-    error = QtCore.Signal()
+    finished = Signal()
+    error = Signal(tuple)
+    result = Signal(object)
+    progress = Signal(int)
 
 
 class CentralWidget(QWidget):
@@ -66,6 +68,7 @@ class CentralWidget(QWidget):
         self.dropdown = QtWidgets.QComboBox(self)
         self.fill_dropdown()
         self.fill_layout()
+        self.threadpool = QThreadPool()
         self.button.clicked.connect(self.send_data)
         self.setFixedSize(400, 200)
 
@@ -84,14 +87,14 @@ class CentralWidget(QWidget):
             self.dropdown.addItem(str(code.name).replace('_', ' '))
 
     def send_data(self):
-        global to_send
-        to_send = True
+        worker = Worker(serializer.start)
+        self.threadpool.start(worker)
 
 
 class Application(QMainWindow):
 
-    def __init__(self):
-        QMainWindow.__init__(self)
+    def __init__(self, parent=None):
+        QMainWindow.__init__(self, parent)
         widget = CentralWidget()
         self.setCentralWidget(widget)
 
@@ -103,17 +106,5 @@ def run_gui():
     sys.exit(app.exec_())
 
 
-def run_serializer():
-    global to_send
-    serializer = Serializer()
-    while True:
-        if to_send:
-            serializer.to_send = to_send
-            to_send = False
-
-
 if __name__ == "__main__":
-    t2 = Thread(target=run_serializer)
-    t2.start()
-    t1 = Thread(target=run_gui)
-    t1.start()
+    run_gui()
