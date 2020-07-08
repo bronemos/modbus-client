@@ -1,10 +1,14 @@
 import sys
+import traceback
+import queue
+
 from PySide2.QtWidgets import *
 from PySide2 import QtCore, QtWidgets
 from enum import Enum
 from serializer import Serializer
 from threading import Thread
 from time import sleep
+
 
 
 class Codes(Enum):
@@ -22,8 +26,37 @@ class Codes(Enum):
 
 to_send = False
 
+class Worker(QtCore.QRunnable):
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+        self.kwargs['progress_callback'] = self.signals.progress
+
+    def run(self):
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)
+        finally:
+            self.signals.finished.emit()
+
+
+class WorkerSignals(QtCore.QObject):
+
+    finished = QtCore.Signal()
+    error = QtCore.Signal()
+
 
 class CentralWidget(QWidget):
+
     def __init__(self, parent=None):
         super(CentralWidget, self).__init__(parent, QtCore.Qt.Window)
         self.edit = QLineEdit("Write command here")
@@ -68,7 +101,6 @@ def run_gui():
     mainWindow = Application()
     mainWindow.show()
     sys.exit(app.exec_())
-
 
 
 def run_serializer():
