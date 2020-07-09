@@ -3,7 +3,7 @@ import traceback
 import queue
 import asyncio
 import serializer
-import GUIElements.guielements as guielements
+import style.guielements as guielements
 
 from PySide2.QtWidgets import *
 from PySide2 import QtCore, QtWidgets, QtGui
