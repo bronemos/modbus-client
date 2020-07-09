@@ -6,7 +6,7 @@ import serializer
 import GUIElements.guielements as guielements
 
 from PySide2.QtWidgets import *
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtCore import *
 from enum import Enum
 from threading import Thread
@@ -60,42 +60,61 @@ class WorkerSignals(QtCore.QObject):
 
 
 class CentralWidget(QWidget):
+    worker = Worker(serializer.start)
 
     def __init__(self, parent=None):
         super(CentralWidget, self).__init__(parent, QtCore.Qt.Window)
+
+        self.requestLabel = QLabel("REQUEST")
+        self.requestLabel.setAlignment(QtCore.Qt.AlignCenter)
+
         self.edit = guielements.ClickableLineEdit("abcd")
+
+        self.styleComboBox = QComboBox()
         self.edit.clicked.connect(self.clear_line)
+
         self.preview = QLabel("PREVIEW")
         self.preview.setAlignment(QtCore.Qt.AlignCenter)
+
         self.button = QPushButton("Send Data")
+        self.button.clicked.connect(self.send_data)
+
         self.dropdown = QtWidgets.QComboBox(self)
-        self.fill_dropdown()
+        self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
+
+        self.separator = QFrame()
+        self.separator.setGeometry(QRect(320, 150, 118, 3))
+        self.separator.setFrameShape(QFrame.HLine)
+        self.separator.setFrameShadow(QFrame.Sunken)
+
+        self.responseLabel = QLabel("Response")
+        self.responseLabel.setAlignment(QtCore.Qt.AlignCenter)
+
         self.fill_layout()
         self.threadpool = QThreadPool()
-        self.button.clicked.connect(self.send_data)
-        self.setFixedSize(400, 200)
+
 
     def fill_layout(self):
         layout = QVBoxLayout()
 
+        layout.addWidget(self.requestLabel)
         layout.addWidget(self.dropdown)
         layout.addWidget(self.edit)
         layout.addWidget(self.button)
         layout.addWidget(self.preview)
+        layout.addWidget(self.separator)
+        layout.addWidget(self.responseLabel)
 
         self.setLayout(layout)
 
-    def fill_dropdown(self):
-        for code in Codes:
-            self.dropdown.addItem(str(code.name).replace('_', ' '))
-
     def send_data(self):
-        worker = Worker(serializer.start)
-        self.threadpool.start(worker)
+        self.threadpool.start(self.worker)
 
     def clear_line(self):
-        if self.edit.text() == "abcd":
+        if self.edit.text() == self.edit.default_value:
             self.edit.clear()
+        else:
+            self.edit.setText(self.edit.default_value)
 
 
 class Application(QMainWindow):
@@ -108,6 +127,7 @@ class Application(QMainWindow):
 
 def run_gui():
     app = QApplication(sys.argv)
+    app.setStyle('Fusion')
     mainWindow = Application()
     mainWindow.show()
     sys.exit(app.exec_())
