@@ -60,7 +60,9 @@ class WorkerSignals(QtCore.QObject):
 
 
 class CentralWidget(QWidget):
+    threadpool = QThreadPool()
     worker = Worker(serializer.start)
+    threadpool.start(worker)
 
     def __init__(self, parent=None):
         super(CentralWidget, self).__init__(parent, QtCore.Qt.Window)
@@ -87,12 +89,10 @@ class CentralWidget(QWidget):
         self.separator.setFrameShape(QFrame.HLine)
         self.separator.setFrameShadow(QFrame.Sunken)
 
-        self.responseLabel = QLabel("Response")
+        self.responseLabel = QLabel("RESPONSE")
         self.responseLabel.setAlignment(QtCore.Qt.AlignCenter)
 
         self.fill_layout()
-        self.threadpool = QThreadPool()
-
 
     def fill_layout(self):
         layout = QVBoxLayout()
@@ -108,7 +108,7 @@ class CentralWidget(QWidget):
         self.setLayout(layout)
 
     def send_data(self):
-        self.threadpool.start(self.worker)
+        serializer.to_send = True
 
     def clear_line(self):
         if self.edit.text() == self.edit.default_value:
