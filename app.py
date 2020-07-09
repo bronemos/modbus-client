@@ -1,12 +1,14 @@
 import sys
 import traceback
 import queue
+import asyncio
+import serializer
+import GUIElements.guielements as guielements
 
 from PySide2.QtWidgets import *
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import *
 from enum import Enum
-import serializer
 from threading import Thread
 from time import sleep
 
@@ -61,7 +63,8 @@ class CentralWidget(QWidget):
 
     def __init__(self, parent=None):
         super(CentralWidget, self).__init__(parent, QtCore.Qt.Window)
-        self.edit = QLineEdit("Write command here")
+        self.edit = guielements.ClickableLineEdit("abcd")
+        self.edit.clicked.connect(self.clear_line)
         self.preview = QLabel("PREVIEW")
         self.preview.setAlignment(QtCore.Qt.AlignCenter)
         self.button = QPushButton("Send Data")
@@ -89,6 +92,10 @@ class CentralWidget(QWidget):
     def send_data(self):
         worker = Worker(serializer.start)
         self.threadpool.start(worker)
+
+    def clear_line(self):
+        if self.edit.text() == "abcd":
+            self.edit.clear()
 
 
 class Application(QMainWindow):

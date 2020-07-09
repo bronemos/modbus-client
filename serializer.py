@@ -7,7 +7,6 @@ conf = {
     'host': 'localhost',
     'port': '3456'
 }
-to_send = False
 
 
 async def serialize():
@@ -20,17 +19,15 @@ async def serialize():
             print(msg)
 
     async def ws_writer():
-        while True:
-            if to_send:
-                try:
-                    await ws.send_bytes(bytes.fromhex('00 05 00 00 00 06 01 01 00 00 00 01'))
-                except Exception as e:
-                    print(e)
-                to_send = False
+        try:
+            await ws.send_bytes(bytes.fromhex('00 05 00 00 00 06 01 01 00 00 00 01'))
+        except Exception as e:
+            print(e)
 
     ws_reader_future = asyncio.ensure_future(ws_reader())
     ws_writer_future = asyncio.ensure_future(ws_writer())
-    await asyncio.wait([ws_reader_future, ws_writer_future], return_when=asyncio.FIRST_COMPLETED)
+    await asyncio.wait([ws_reader_future, ws_writer_future])
+    asyncio.new_event_loop().run_until_complete(ws_reader_future)
     ws_reader_future.cancel()
     ws_writer_future.cancel()
     await ws.close()
