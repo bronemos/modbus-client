@@ -1,16 +1,15 @@
 import sys
 import traceback
-import queue
 import asyncio
 import serializer
 import style.guielements as guielements
+import queue
 
 from PySide2.QtWidgets import *
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtCore import *
 from enum import Enum
-from threading import Thread
-from time import sleep
+from concurrent.futures import ThreadPoolExecutor
 
 
 class Codes(Enum):
@@ -61,6 +60,7 @@ class WorkerSignals(QtCore.QObject):
 
 class CentralWidget(QWidget):
     threadpool = QThreadPool()
+    executor = ThreadPoolExecutor()
     worker = Worker(serializer.start)
     threadpool.start(worker)
 
@@ -79,7 +79,7 @@ class CentralWidget(QWidget):
         self.preview.setAlignment(QtCore.Qt.AlignCenter)
 
         self.button = QPushButton("Send Data")
-        self.button.clicked.connect(self.send_data)
+        self.button.clicked.connect(self.validate_and_send)
 
         self.dropdown = QtWidgets.QComboBox(self)
         self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
@@ -91,6 +91,9 @@ class CentralWidget(QWidget):
 
         self.responseLabel = QLabel("RESPONSE")
         self.responseLabel.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.messageLabel = QLabel()
+        self.messageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
         self.fill_layout()
 
@@ -104,17 +107,30 @@ class CentralWidget(QWidget):
         layout.addWidget(self.preview)
         layout.addWidget(self.separator)
         layout.addWidget(self.responseLabel)
+        layout.addWidget(self.messageLabel)
 
         self.setLayout(layout)
 
-    def send_data(self):
-        serializer.to_send = True
+    def validate_and_send(self):
+        serializer.req_queue.put(self.edit.text())
+        asyncio.get_event_loop().run_until_complete(self.put_message())
 
     def clear_line(self):
         if self.edit.text() == self.edit.default_value:
             self.edit.clear()
         else:
             self.edit.setText(self.edit.default_value)
+
+    async def put_message(self):
+        message = await asyncio.get_event_loop().run_in_executor(self.executor, self.get_message)
+        self.messageLabel.setText(str(message))
+
+    def get_message(self):
+        try:
+            message = serializer.res_queue.get()
+            return message
+        except queue.Empty:
+            return
 
 
 class Application(QMainWindow):
