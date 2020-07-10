@@ -1,6 +1,7 @@
 import PySide2
+
 from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QLineEdit
+from PySide2.QtWidgets import *
 
 
 class ClickableLineEdit(QLineEdit):
