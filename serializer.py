@@ -27,6 +27,8 @@ async def serialize():
     async def ws_writer():
         while True:
             user_message = await asyncio.get_event_loop().run_in_executor(executor, ext_get_user_message)
+            if user_message == "DC":
+                return
             try:
                 await ws.send_bytes(bytes.fromhex(user_message))
             except Exception as e:
@@ -37,7 +39,6 @@ async def serialize():
     await asyncio.wait([ws_reader_future, ws_writer_future], return_when=asyncio.FIRST_COMPLETED)
     ws_reader_future.cancel()
     ws_writer_future.cancel()
-    await ws.close()
 
 
 def ext_get_user_message():

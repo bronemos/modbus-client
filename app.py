@@ -1,9 +1,9 @@
 import sys
 import traceback
 import serializer
-import style.widgets as widgets
 import asyncio
 
+from style.widgets import *
 from PySide2.QtWidgets import *
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtCore import *
@@ -44,23 +44,36 @@ class WorkerSignals(QtCore.QObject):
 class Application(QMainWindow):
     threadpool = QThreadPool()
     executor = ThreadPoolExecutor(max_workers=1)
-    worker = Worker(serializer.start)
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
-        widget = widgets.ConnectWidget()
-        widget.button.clicked.connect(self.change_layout)
-        self.setCentralWidget(widget)
 
-    def change_layout(self):
-        self.threadpool.start(self.worker)
+        self.mainWidget = QStackedWidget()
+
+        self.ConnectWidget = ConnectWidget()
+        self.ConnectWidget.button.clicked.connect(self._connect)
+
+        self.DefaultWidget = DefaultWidget()
+        self.DefaultWidget.DCButton.clicked.connect(self._dc)
+
+        self.mainWidget.addWidget(self.ConnectWidget)
+        self.mainWidget.addWidget(self.DefaultWidget)
+
+        self.setCentralWidget(self.mainWidget)
+
+    def _connect(self):
+        worker = Worker(serializer.start)
+        self.threadpool.start(worker)
         asyncio.get_event_loop().run_until_complete(self.check_connection())
+
+    def _dc(self):
+        serializer.req_queue.put("DC")
+        self.mainWidget.setCurrentWidget(self.ConnectWidget)
 
     async def check_connection(self):
         ack = await asyncio.get_event_loop().run_in_executor(self.executor, self.wait_for_ack)
         if ack == "ACK":
-            widget = widgets.CentralWidget()
-            self.setCentralWidget(widget)
+            self.mainWidget.setCurrentWidget(self.DefaultWidget)
 
     def wait_for_ack(self):
         try:

@@ -23,18 +23,35 @@ class Codes(Enum):
     WRITE_MULTIPLE_REGISTERS = '10'
 
 
+class DefaultWidget(QWidget):
+
+    def __init__(self, parent=None):
+        super(DefaultWidget, self).__init__(parent, QtCore.Qt.Window)
+        self.DCButton = QPushButton("Disconnect")
+        self.dropdown = QComboBox(self)
+        self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
+        layout = QFormLayout()
+        layout.addWidget(self.DCButton)
+        layout.addRow("Function: ", self.dropdown)
+        self.setLayout(layout)
+
+
 class ConnectWidget(QWidget):
 
     def __init__(self, parent=None):
         super(ConnectWidget, self).__init__(parent, QtCore.Qt.Window)
         self.button = QPushButton("Connect")
-        self.dropdown = QtWidgets.QComboBox(self)
+        self.dropdown = QComboBox(self)
         self.dropdown.setEnabled(False)
         self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
         layout = QFormLayout()
         layout.addWidget(self.button)
         layout.addRow("Function: ", self.dropdown)
         self.setLayout(layout)
+
+
+class ReadCoilsWidget(QWidget):
+    pass
 
 
 class CentralWidget(QWidget):
