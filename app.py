@@ -53,11 +53,20 @@ class Application(QMainWindow):
         self.ConnectWidget = ConnectWidget()
         self.ConnectWidget.button.clicked.connect(self._connect)
 
+        self.ReadCoilsWidget = ReadCoilsWidget()
+        self.ReadCoilsWidget.dropdown.view().pressed.connect(self.change_widget)
+
+        self.ReadDiscreteInputsWidget = ReadDiscreteInputsWidget()
+        self.ReadDiscreteInputsWidget.dropdown.view().pressed.connect(self.change_widget)
+
         self.DefaultWidget = DefaultWidget()
-        self.DefaultWidget.DCButton.clicked.connect(self._dc)
+        self.DefaultWidget.dropdown.view().pressed.connect(self.change_widget)
 
         self.mainWidget.addWidget(self.ConnectWidget)
         self.mainWidget.addWidget(self.DefaultWidget)
+        self.mainWidget.addWidget(self.ReadCoilsWidget)
+        self.mainWidget.addWidget(self.ReadDiscreteInputsWidget)
+        self.connect_buttons()
 
         self.setCentralWidget(self.mainWidget)
 
@@ -69,6 +78,32 @@ class Application(QMainWindow):
     def _dc(self):
         serializer.req_queue.put("DC")
         self.mainWidget.setCurrentWidget(self.ConnectWidget)
+
+    def connect_buttons(self):
+        i = 0
+        while w := self.mainWidget.widget(i):
+            try:
+                w.DCButton.clicked.connect(self._dc)
+            except AttributeError as e:
+                print(e)
+            finally:
+                i += 1
+
+    def change_widget(self):
+        current = str(self.mainWidget.currentWidget().dropdown.currentText())
+        if current == "READ COILS":
+            print("read coils")
+            self.mainWidget.setCurrentWidget(self.ReadCoilsWidget)
+            self.mainWidget.currentWidget().dropdown.setCurrentText("READ COILS")
+        elif current == "READ DISCRETE INPUTS":
+            print("read discrete")
+            self.mainWidget.setCurrentWidget(self.ReadDiscreteInputsWidget)
+            self.mainWidget.currentWidget().dropdown.setCurrentText("READ DISCRETE INPUTS")
+        elif current == "READ HOLDING REGISTERS":
+            print("read holding")
+        else:
+            print("else")
+            self.mainWidget.setCurrentWidget(self.DefaultWidget)
 
     async def check_connection(self):
         ack = await asyncio.get_event_loop().run_in_executor(self.executor, self.wait_for_ack)

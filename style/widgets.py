@@ -1,4 +1,3 @@
-import style.custom_elements as guielements
 import serializer
 import asyncio
 import queue
@@ -7,6 +6,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2 import QtCore, QtWidgets
 from enum import Enum
+from style.custom_elements import *
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -23,17 +23,12 @@ class Codes(Enum):
     WRITE_MULTIPLE_REGISTERS = '10'
 
 
-class DefaultWidget(QWidget):
-
-    def __init__(self, parent=None):
-        super(DefaultWidget, self).__init__(parent, QtCore.Qt.Window)
-        self.DCButton = QPushButton("Disconnect")
-        self.dropdown = QComboBox(self)
-        self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
-        layout = QFormLayout()
-        layout.addWidget(self.DCButton)
-        layout.addRow("Function: ", self.dropdown)
-        self.setLayout(layout)
+def clear_line(lineedit):
+    default_value = "abcd"
+    if lineedit.text() == default_value:
+        lineedit.clear()
+    else:
+        lineedit.setText(default_value)
 
 
 class ConnectWidget(QWidget):
@@ -44,14 +39,58 @@ class ConnectWidget(QWidget):
         self.dropdown = QComboBox(self)
         self.dropdown.setEnabled(False)
         self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
-        layout = QFormLayout()
-        layout.addWidget(self.button)
-        layout.addRow("Function: ", self.dropdown)
-        self.setLayout(layout)
+        self.layout = QFormLayout()
+        self.layout.addWidget(self.button)
+        self.layout.addRow("Function: ", self.dropdown)
+        self.setLayout(self.layout)
 
 
-class ReadCoilsWidget(QWidget):
-    pass
+class DefaultWidget(QWidget):
+
+    def __init__(self, parent=None):
+        super(DefaultWidget, self).__init__(parent, QtCore.Qt.Window)
+        self.DCButton = QPushButton("Disconnect")
+        self.dropdown = QComboBox(self)
+        self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
+        self.layout = QFormLayout()
+        self.layout.addWidget(self.DCButton)
+        self.layout.addRow("Function: ", self.dropdown)
+        self.setLayout(self.layout)
+
+
+class DefaultRWWidget(DefaultWidget):
+
+    def __init__(self):
+        super(DefaultRWWidget, self).__init__()
+        self.firstAddress = ClickableLineEdit("abcd")
+        self.count = ClickableLineEdit("abcd")
+        self.count.clicked.connect(clear_line)
+        self.firstAddress.clicked.connect(clear_line)
+
+
+class ReadCoilsWidget(DefaultRWWidget):
+
+    def __init__(self):
+        super(ReadCoilsWidget, self).__init__()
+        self.layout.addRow("First coil address: ", self.firstAddress)
+        self.layout.addRow("Coil count: ", self.count)
+        self.setLayout(self.layout)
+
+
+class ReadDiscreteInputsWidget(DefaultRWWidget):
+    def __init__(self):
+        super(ReadDiscreteInputsWidget, self).__init__()
+        self.layout.addRow("First input address: ", self.firstAddress)
+        self.layout.addRow("Input count: ", self.count)
+        self.setLayout(self.layout)
+
+
+class ReadHoldingRegistersWidget(DefaultRWWidget):
+    def __init__(self):
+        super(ReadHoldingRegistersWidget, self).__init__()
+        self.layout.addRow("First input address: ", self.firstAddress)
+        self.layout.addRow("Register count: ", self.count)
+        self.setLayout(self.layout)
 
 
 class CentralWidget(QWidget):
@@ -62,7 +101,7 @@ class CentralWidget(QWidget):
         self.requestLabel = QLabel("REQUEST")
         self.requestLabel.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.edit = guielements.ClickableLineEdit("abcd")
+        self.edit = ClickableLineEdit("abcd")
         self.edit.clicked.connect(self.clear_line)
 
         self.styleComboBox = QComboBox()
@@ -108,12 +147,6 @@ class CentralWidget(QWidget):
     def validate_and_send(self):
         serializer.req_queue.put(self.edit.text())
         asyncio.get_event_loop().run_until_complete(self.put_message())
-
-    def clear_line(self):
-        if self.edit.text() == self.edit.default_value:
-            self.edit.clear()
-        else:
-            self.edit.setText(self.edit.default_value)
 
     async def put_message(self):
         message = await asyncio.get_event_loop().run_in_executor(self.executor, self.get_message)
