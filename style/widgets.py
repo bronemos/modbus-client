@@ -24,11 +24,9 @@ class Codes(Enum):
 
 
 def clear_line(lineedit):
-    default_value = "abcd"
-    if lineedit.text() == default_value:
+
+    if lineedit.text() == lineedit.default_value:
         lineedit.clear()
-    else:
-        lineedit.setText(default_value)
 
 
 class ConnectWidget(QWidget):
@@ -50,6 +48,8 @@ class DefaultWidget(QWidget):
     def __init__(self, parent=None):
         super(DefaultWidget, self).__init__(parent, QtCore.Qt.Window)
         self.DCButton = QPushButton("Disconnect")
+        self.sendButton = QPushButton("SEND")
+        self.sendButton.clicked.connect(self.validate_and_send)
         self.dropdown = QComboBox(self)
         self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
         self.layout = QFormLayout()
@@ -57,15 +57,30 @@ class DefaultWidget(QWidget):
         self.layout.addRow("Function: ", self.dropdown)
         self.setLayout(self.layout)
 
+    def validate_and_send(self):
+        serializer.req_queue.put(self.edit.text())
+        asyncio.get_event_loop().run_until_complete(self.put_message())
+
+    async def put_message(self):
+        message = await asyncio.get_event_loop().run_in_executor(self.executor, self.get_message)
+        self.messageLabel.setText(str(message))
+
+    def get_message(self):
+        try:
+            message = serializer.res_queue.get()
+            return message
+        except queue.Empty:
+            return
+
 
 class DefaultRWWidget(DefaultWidget):
 
     def __init__(self):
         super(DefaultRWWidget, self).__init__()
-        self.firstAddress = ClickableLineEdit("abcd")
-        self.count = ClickableLineEdit("abcd")
-        self.count.clicked.connect(clear_line)
-        self.firstAddress.clicked.connect(clear_line)
+        self.firstAddress = ClickableLineEdit("0")
+        self.count = ClickableLineEdit("1")
+        self.count.clicked.connect(lambda: clear_line(self.count))
+        self.firstAddress.clicked.connect(lambda: clear_line(self.firstAddress))
 
 
 class ReadCoilsWidget(DefaultRWWidget):
@@ -74,6 +89,7 @@ class ReadCoilsWidget(DefaultRWWidget):
         super(ReadCoilsWidget, self).__init__()
         self.layout.addRow("First coil address: ", self.firstAddress)
         self.layout.addRow("Coil count: ", self.count)
+        self.layout.addWidget(self.sendButton)
         self.setLayout(self.layout)
 
 
@@ -82,6 +98,7 @@ class ReadDiscreteInputsWidget(DefaultRWWidget):
         super(ReadDiscreteInputsWidget, self).__init__()
         self.layout.addRow("First input address: ", self.firstAddress)
         self.layout.addRow("Input count: ", self.count)
+        self.layout.addWidget(self.sendButton)
         self.setLayout(self.layout)
 
 
@@ -90,6 +107,7 @@ class ReadHoldingRegistersWidget(DefaultRWWidget):
         super(ReadHoldingRegistersWidget, self).__init__()
         self.layout.addRow("First input address: ", self.firstAddress)
         self.layout.addRow("Register count: ", self.count)
+        self.layout.addWidget(self.sendButton)
         self.setLayout(self.layout)
 
 
