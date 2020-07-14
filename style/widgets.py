@@ -46,7 +46,6 @@ class DefaultWidget(QWidget):
 
     def __init__(self, parent=None):
         super(DefaultWidget, self).__init__(parent, QtCore.Qt.Window)
-        self.sendButton = QPushButton("SEND")
         self.layout = QFormLayout()
         self.setLayout(self.layout)
 
@@ -58,9 +57,8 @@ class DefaultRWWidget(DefaultWidget):
         super(DefaultRWWidget, self).__init__()
         self.firstAddress = ClickableLineEdit("0")
         self.count = ClickableLineEdit("1")
-        self.sendButton.clicked.connect(self.validate_and_send)
-        self.count.clicked.connect(lambda: clear_line(self.count))
-        self.firstAddress.clicked.connect(lambda: clear_line(self.firstAddress))
+        self.count.focused.connect(lambda: clear_line(self.count))
+        self.firstAddress.focused.connect(lambda: clear_line(self.firstAddress))
 
     def validate_and_send(self):
         hex_id_stripped = str(hex(self.last_id))[2:]
@@ -69,7 +67,7 @@ class DefaultRWWidget(DefaultWidget):
         message = '0' * (4 - len(hex_id_stripped)) + hex_id_stripped + protocol_code + '0006' + unit_address + getattr(
             Codes, self.dropdown.currentText().replace(' ', '_')).value + '0' * (
                           4 - len(first_address_stripped)) + first_address_stripped + '0' * (
-                              4 - len(count_stripped)) + count_stripped
+                          4 - len(count_stripped)) + count_stripped
         print(message)
         serializer.req_queue.put(message)
         asyncio.get_event_loop().run_until_complete(self.show_response())
@@ -94,7 +92,6 @@ class ReadCoilsWidget(DefaultRWWidget):
         super(ReadCoilsWidget, self).__init__()
         self.layout.addRow("First coil address: ", self.firstAddress)
         self.layout.addRow("Coil count: ", self.count)
-        self.layout.addWidget(self.sendButton)
         self.setLayout(self.layout)
 
 
@@ -103,7 +100,6 @@ class ReadDiscreteInputsWidget(DefaultRWWidget):
         super(ReadDiscreteInputsWidget, self).__init__()
         self.layout.addRow("First input address: ", self.firstAddress)
         self.layout.addRow("Input count: ", self.count)
-        self.layout.addWidget(self.sendButton)
         self.setLayout(self.layout)
 
 
@@ -112,6 +108,12 @@ class ReadHoldingRegistersWidget(DefaultRWWidget):
         super(ReadHoldingRegistersWidget, self).__init__()
         self.layout.addRow("First input address: ", self.firstAddress)
         self.layout.addRow("Register count: ", self.count)
-        self.layout.addWidget(self.sendButton)
         self.setLayout(self.layout)
 
+
+class IndicatorLight(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.radius = 100
+        self.setFixedSize(50, 50)
