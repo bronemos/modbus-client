@@ -47,10 +47,7 @@ class DefaultWidget(QWidget):
     def __init__(self, parent=None):
         super(DefaultWidget, self).__init__(parent, QtCore.Qt.Window)
         self.sendButton = QPushButton("SEND")
-        self.dropdown = QComboBox(self)
-        self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
         self.layout = QFormLayout()
-        self.layout.addRow("Function: ", self.dropdown)
         self.setLayout(self.layout)
 
 

@@ -58,14 +58,10 @@ class Application(QMainWindow):
         self.ConnectWidget.button.clicked.connect(self._connect_disconnect)
 
         self.ReadCoilsWidget = ReadCoilsWidget()
-        self.ReadCoilsWidget.dropdown.view().pressed.connect(self.change_widget)
 
         self.ReadDiscreteInputsWidget = ReadDiscreteInputsWidget()
-        self.ReadDiscreteInputsWidget.dropdown.view().pressed.connect(self.change_widget)
 
         self.DefaultWidget = DefaultWidget()
-
-        self.DefaultWidget.dropdown.view().pressed.connect(self.change_widget)
 
         self.stackedMainWidget.addWidget(self.DefaultWidget)
         self.stackedMainWidget.addWidget(self.ReadCoilsWidget)
@@ -73,7 +69,13 @@ class Application(QMainWindow):
         self.stackedMainWidget.setEnabled(self.connected)
 
         layout = QVBoxLayout()
+        form = QFormLayout()
+        self.dropdown = QComboBox()
+        self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
+        self.dropdown.activated[str].connect(self.change_widget)
+        form.addRow("Function: ", self.dropdown)
         layout.addWidget(self.ConnectWidget)
+        layout.addLayout(form)
         layout.addWidget(self.stackedMainWidget)
 
         self.mainWidget.setLayout(layout)
@@ -93,16 +95,19 @@ class Application(QMainWindow):
             self.ConnectWidget.button.setText("Connect")
 
     def change_widget(self):
-        current = str(self.stackedMainWidget.currentWidget().dropdown.currentText())
+        print("changing")
+        current = str(self.dropdown.currentText())
         if current == "READ COILS":
             print("read coils")
             self.stackedMainWidget.setCurrentWidget(self.ReadCoilsWidget)
-            self.stackedMainWidget.currentWidget().dropdown.setCurrentText("READ COILS")
+            self.dropdown.setCurrentText("READ COILS")
         elif current == "READ DISCRETE INPUTS":
             print("read discrete")
             self.stackedMainWidget.setCurrentWidget(self.ReadDiscreteInputsWidget)
-            self.stackedMainWidget.currentWidget().dropdown.setCurrentText("READ DISCRETE INPUTS")
+            self.dropdown.setCurrentText("READ DISCRETE INPUTS")
         elif current == "READ HOLDING REGISTERS":
+            self.stackedMainWidget.setCurrentWidget(self.ReadDiscreteInputsWidget)
+            self.dropdown.setCurrentText("READ HOLDING REGISTERS")
             print("read holding")
         else:
             print("else")
