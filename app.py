@@ -1,15 +1,17 @@
 import sys
-import traceback
 import serializer
 import asyncio
+import queue
 
 from threading import Thread
 from style.widgets import *
 from PySide2.QtWidgets import *
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtCore import *
-from enum import Enum
 from concurrent.futures import ThreadPoolExecutor
+
+protocol_code = '0000'
+unit_address = '01'
 
 
 class Application(QMainWindow):
@@ -29,13 +31,20 @@ class Application(QMainWindow):
         self.ConnectWidget.button.clicked.connect(self._connect_disconnect)
 
         self.ReadCoilsWidget = ReadCoilsWidget()
-
         self.ReadDiscreteInputsWidget = ReadDiscreteInputsWidget()
-
-        self.DefaultWidget = DefaultWidget()
+        self.ReadHoldingRegistersWidget = ReadHoldingRegistersWidget()
+        self.ReadInputRegistersWidget = ReadInputRegistersWidget()
+        self.WriteSingleCoilWidget = WriteSingleCoilWidget()
+        self.WriteSingleRegisterWidget = WriteSingleRegisterWidget()
+        self.WriteMultipleRegistersWidget = WriteMultipleRegistersWidget()
 
         self.stackedMainWidget.addWidget(self.ReadCoilsWidget)
         self.stackedMainWidget.addWidget(self.ReadDiscreteInputsWidget)
+        self.stackedMainWidget.addWidget(self.ReadHoldingRegistersWidget)
+        self.stackedMainWidget.addWidget(self.ReadInputRegistersWidget)
+        self.stackedMainWidget.addWidget(self.WriteSingleCoilWidget)
+        self.stackedMainWidget.addWidget(self.WriteSingleRegisterWidget)
+        self.stackedMainWidget.addWidget(self.WriteMultipleRegistersWidget)
 
         layout = QVBoxLayout()
         form = QFormLayout()
@@ -44,11 +53,6 @@ class Application(QMainWindow):
         self.dropdown.activated[str].connect(self._change_widget)
         form.addRow("Function: ", self.dropdown)
         layout.addWidget(self.ConnectWidget)
-        movie = QtGui.QMovie("dot-splash.gif")
-        # indicator = QLabel()
-        # indicator.setMovie(movie)
-        # movie.start()
-        # layout.addWidget(indicator)
         req_label = QLabel("REQUEST")
         req_label.setAlignment(Qt.AlignCenter)
 
@@ -82,6 +86,9 @@ class Application(QMainWindow):
 
     def _connect_disconnect(self):
         if not self.connected:
+            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connecting_movie)
+            self.ConnectWidget.button.setText("Connecting...")
+            self.ConnectWidget.button.setEnabled(False)
             serializer_thread = Thread(target=serializer.start)
             check_connection_thread = Thread(
                 target=lambda: asyncio.new_event_loop().run_until_complete(self._check_connection()))
@@ -92,38 +99,90 @@ class Application(QMainWindow):
             self.connected = False
             self.reqWidget.setEnabled(self.connected)
             self.ConnectWidget.button.setText("Connect")
+            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.disconnected_movie)
 
     async def _check_connection(self):
         ack = await asyncio.get_event_loop().run_in_executor(self.executor, self._get_message)
 
         if ack == "ACK":
             self.connected = True
+            self.ConnectWidget.button.setEnabled(True)
             self.reqWidget.setEnabled(self.connected)
             self.ConnectWidget.button.setText("Disconnect")
+            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connected_movie)
 
     def _change_widget(self):
-        print("changing")
-        current = str(self.dropdown.currentText())
-        if current == "READ COILS":
-            self.stackedMainWidget.setCurrentWidget(self.ReadCoilsWidget)
-            self.dropdown.setCurrentText("READ COILS")
-        elif current == "READ DISCRETE INPUTS":
-            self.stackedMainWidget.setCurrentWidget(self.ReadDiscreteInputsWidget)
-            self.dropdown.setCurrentText("READ DISCRETE INPUTS")
-        elif current == "READ HOLDING REGISTERS":
-            self.stackedMainWidget.setCurrentWidget(self.ReadDiscreteInputsWidget)
-            self.dropdown.setCurrentText("READ HOLDING REGISTERS")
-        else:
-            self.stackedMainWidget.setCurrentWidget(self.DefaultWidget)
+        current = self.dropdown.currentIndex()
+        self.stackedMainWidget.setCurrentIndex(current)
+        self.dropdown.setCurrentIndex(current)
 
     def _validate_and_send(self):
-        hex_id_stripped = str(hex(self.last_id))[2:]
-        first_address_stripped = str(hex(int(self.stackedMainWidget.currentWidget().firstAddress.text())))[2:]
-        count_stripped = str(hex(int(self.stackedMainWidget.currentWidget().count.text())))[2:]
-        message = '0' * (4 - len(hex_id_stripped)) + hex_id_stripped + protocol_code + '0006' + unit_address + getattr(
-            Codes, self.dropdown.currentText().replace(' ', '_')).value + '0' * (
-                          4 - len(first_address_stripped)) + first_address_stripped + '0' * (
-                          4 - len(count_stripped)) + count_stripped
+        validate_and_send_thread = Thread(target=self._validate_and_send_thread)
+        validate_and_send_thread.start()
+
+    def _validate_and_send_thread(self):
+        hex_id_stripped = "{:04x}".format(self.last_id)
+        current = self.dropdown.currentIndex()
+
+        # handling READ function validation and message assembly
+        if 0 <= current <= 3:
+            try:
+                curr_address = int(self.stackedMainWidget.currentWidget().firstAddress.text())
+            except ValueError:
+                ErrorDialog(self, "Incorrect address input type. Must be integer.")
+                return
+
+            min_address = int(self.stackedMainWidget.currentWidget().address_constraint[0])
+            max_address = int(self.stackedMainWidget.currentWidget().address_constraint[1])
+
+            if not (min_address <= curr_address <= max_address):
+                ErrorDialog(self, f"First address out of bounds.\nHas to be between {min_address} and {max_address}")
+                return
+
+            try:
+                min_count = int(self.stackedMainWidget.currentWidget().count_constraint[0])
+                max_count = int(self.stackedMainWidget.currentWidget().count_constraint[1])
+                curr_count = int(self.stackedMainWidget.currentWidget().count.text())
+            except ValueError:
+                ErrorDialog(self, "Incorrect count input type, must be integer.")
+                return
+
+            if not (min_count <= curr_count <= max_count):
+                ErrorDialog(self, f"Count out of bounds.\nHas to be between {min_count} and {max_count}")
+                return
+
+            first_address_stripped = "{:04x}".format(int(self.stackedMainWidget.currentWidget().firstAddress.text()))
+            count_stripped = "{:04x}".format(int(self.stackedMainWidget.currentWidget().count.text()))
+            print(first_address_stripped)
+            message = hex_id_stripped + protocol_code + '0006' + unit_address + getattr(
+                Codes, self.dropdown.currentText().replace(' ', '_')).value + first_address_stripped + count_stripped
+
+        # handling write single coil validation and assembly
+        elif current == 4:
+
+            try:
+                curr_address = int(self.stackedMainWidget.currentWidget().firstAddress.text())
+            except ValueError:
+                ErrorDialog(self, "Incorrect address input type. Must be integer.")
+                return
+
+            min_address = int(self.stackedMainWidget.currentWidget().address_constraint[0])
+            max_address = int(self.stackedMainWidget.currentWidget().address_constraint[1])
+
+            if not (min_address <= curr_address <= max_address):
+                ErrorDialog(self, f"Coil address out of bounds.\nHas to be between {min_address} and {max_address}")
+                return
+
+            address_stripped = "{:04x}".format(int(self.stackedMainWidget.currentWidget().firstAddress.text()))
+            status = "0000" if self.stackedMainWidget.currentWidget().switch.isChecked() else "FF00"
+            message = hex_id_stripped + protocol_code + '0006' + unit_address + getattr(Codes,
+                                                                                        self.dropdown.currentText().replace(
+                                                                                            ' ',
+                                                                                            '_')).value + address_stripped + status
+
+        elif current == 5:
+            pass
+
         print(message)
         self.last_id += 1
         serializer.req_queue.put(message)
@@ -151,8 +210,12 @@ class Application(QMainWindow):
 
 def run_gui():
     app = QApplication()
+    app.setApplicationDisplayName("Modbus Client GUI")
     app.setStyle('Fusion')
     mainWindow = Application()
+    p = mainWindow.palette()
+    p.setColor(mainWindow.backgroundRole(), Qt.white)
+    mainWindow.setPalette(p)
     mainWindow.show()
     sys.exit(app.exec_())
 

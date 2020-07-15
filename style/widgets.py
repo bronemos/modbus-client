@@ -1,16 +1,9 @@
-import serializer
-import asyncio
-import queue
-
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2 import QtCore, QtWidgets
 from enum import Enum
 from style.custom_elements import *
 from concurrent.futures import ThreadPoolExecutor
-
-protocol_code = '0000'
-unit_address = '01'
 
 
 class Codes(Enum):
@@ -20,10 +13,10 @@ class Codes(Enum):
     READ_INPUT_REGISTERS = '04'
     WRITE_SINGLE_COIL = '05'
     WRITE_SINGLE_REGISTER = '06'
+    WRITE_MULTIPLE_REGISTERS = '10'
     READ_EXCEPTION_STATUS = '07'
     DIAGNOSTICS = '08'
     WRITE_MULTIPLE_COILS = '0F'
-    WRITE_MULTIPLE_REGISTERS = '10'
 
 
 def clear_line(lineedit):
@@ -36,8 +29,22 @@ class ConnectWidget(QWidget):
     def __init__(self, parent=None):
         super(ConnectWidget, self).__init__(parent, QtCore.Qt.Window)
         self.button = QPushButton("Connect")
-        layout = QVBoxLayout()
+        self.disconnected_movie = QtGui.QMovie("disconnected.gif")
+        self.connecting_movie = QtGui.QMovie("connecting.gif")
+        self.connected_movie = QtGui.QMovie("connected.gif")
+        self.disconnected_movie.setScaledSize(QSize(50, 50))
+        self.connecting_movie.setScaledSize(QSize(50, 50))
+        self.connected_movie.setScaledSize(QSize(50, 50))
+        self.indicator = QLabel()
+        self.indicator.setMovie(self.disconnected_movie)
+        self.disconnected_movie.start()
+        self.connected_movie.start()
+        self.connecting_movie.start()
+
+        layout = QHBoxLayout()
+        layout.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.button)
+        layout.addWidget(self.indicator)
         self.setLayout(layout)
 
 
@@ -50,70 +57,117 @@ class DefaultWidget(QWidget):
         self.setLayout(self.layout)
 
 
-class DefaultRWWidget(DefaultWidget):
-    last_id = 0
+class DefaultRWidget(DefaultWidget):
+    address_constraint = (1, 65535)
 
     def __init__(self):
-        super(DefaultRWWidget, self).__init__()
+        super(DefaultRWidget, self).__init__()
         self.firstAddress = ClickableLineEdit("0")
         self.count = ClickableLineEdit("1")
         self.count.focused.connect(lambda: clear_line(self.count))
         self.firstAddress.focused.connect(lambda: clear_line(self.firstAddress))
 
-    def validate_and_send(self):
-        hex_id_stripped = str(hex(self.last_id))[2:]
-        first_address_stripped = str(hex(int(self.firstAddress.text())))[2:]
-        count_stripped = str(hex(int(self.count.text())))[2:]
-        message = '0' * (4 - len(hex_id_stripped)) + hex_id_stripped + protocol_code + '0006' + unit_address + getattr(
-            Codes, self.dropdown.currentText().replace(' ', '_')).value + '0' * (
-                          4 - len(first_address_stripped)) + first_address_stripped + '0' * (
-                          4 - len(count_stripped)) + count_stripped
-        print(message)
-        serializer.req_queue.put(message)
-        asyncio.get_event_loop().run_until_complete(self.show_response())
 
-    async def show_response(self):
-        message = await asyncio.get_event_loop().run_in_executor(self.executor, self.get_message)
-        self.messageLabel = QLabel(str(message))
-        self.layout.addWidget(self.messageLabel)
-        self.setLayout(self.layout)
+class DefaultWWidget(DefaultWidget):
+    address_constraint = (1, 65535)
 
-    def get_message(self):
-        try:
-            message = serializer.res_queue.get()
-            return message
-        except queue.Empty:
-            return
+    def __init__(self):
+        super(DefaultWWidget, self).__init__()
+        self.firstAddress = ClickableLineEdit("0")
+        self.firstAddress.focused.connect(lambda: clear_line(self.firstAddress))
 
 
-class ReadCoilsWidget(DefaultRWWidget):
+class ReadCoilsWidget(DefaultRWidget):
 
     def __init__(self):
         super(ReadCoilsWidget, self).__init__()
+        self.count_constraint = (1, 2000)
+        self.firstAddress.setToolTip(
+            f"Address of the first coil.\nValue between {self.address_constraint[0]} and {self.address_constraint[1]}.")
+        self.count.setToolTip(
+            f"Number of coils to be read.\nValue between {self.count_constraint[0]} and {self.count_constraint[1]}.")
         self.layout.addRow("First coil address: ", self.firstAddress)
         self.layout.addRow("Coil count: ", self.count)
         self.setLayout(self.layout)
 
 
-class ReadDiscreteInputsWidget(DefaultRWWidget):
+class ReadDiscreteInputsWidget(DefaultRWidget):
+
     def __init__(self):
         super(ReadDiscreteInputsWidget, self).__init__()
+        self.count_constraint = (1, 2000)
+        self.firstAddress.setToolTip(
+            f"Address of the first discrete input.\nValue between {self.address_constraint[0]} and {self.address_constraint[1]}.")
+        self.count.setToolTip(
+            f"Number of discrete inputs to be read.\nValue between {self.count_constraint[0]} and {self.count_constraint[1]}.")
         self.layout.addRow("First input address: ", self.firstAddress)
         self.layout.addRow("Input count: ", self.count)
         self.setLayout(self.layout)
 
 
-class ReadHoldingRegistersWidget(DefaultRWWidget):
+class ReadHoldingRegistersWidget(DefaultRWidget):
+
     def __init__(self):
         super(ReadHoldingRegistersWidget, self).__init__()
+        self.count_constraint = (1, 125)
+        self.firstAddress.setToolTip(
+            f"Address of the first holding register.\nValue between {self.address_constraint[0]} and {self.address_constraint[1]}.")
+        self.count.setToolTip(
+            f"Number of holding registers to be read.\nValue between {self.count_constraint[0]} and {self.count_constraint[1]}.")
         self.layout.addRow("First input address: ", self.firstAddress)
         self.layout.addRow("Register count: ", self.count)
         self.setLayout(self.layout)
 
 
-class IndicatorLight(QWidget):
+class ReadInputRegistersWidget(DefaultRWidget):
 
     def __init__(self):
-        super().__init__()
-        self.radius = 100
-        self.setFixedSize(50, 50)
+        super(ReadInputRegistersWidget, self).__init__()
+        self.count_constraint = (1, 125)
+        self.firstAddress.setToolTip(
+            f"Address of the first input register.\nValue between {self.address_constraint[0]} and {self.address_constraint[1]}.")
+        self.count.setToolTip(
+            f"Number of input registers to be read.\nValue between {self.count_constraint[0]} and {self.count_constraint[1]}")
+        self.layout.addRow("First input address: ", self.firstAddress)
+        self.layout.addRow("Register count: ", self.count)
+        self.setLayout(self.layout)
+
+
+class WriteSingleCoilWidget(DefaultWWidget):
+
+    def __init__(self):
+        super(WriteSingleCoilWidget, self).__init__()
+        self.firstAddress.setToolTip(
+            f"Address of the coil.\nValue between {self.address_constraint[0]} and {self.address_constraint[1]}.")
+        self.switch = Switch()
+        self.layout.addRow("Coil address: ", self.firstAddress)
+        self.layout.addRow("Coil status: ", self.switch)
+        self.setLayout(self.layout)
+
+
+class WriteSingleRegisterWidget(DefaultWWidget):
+
+    def __init__(self):
+        super(WriteSingleRegisterWidget, self).__init__()
+        self.firstAddress.setToolTip(
+            f"Address of the register.\nValue between {self.address_constraint[0]} and {self.address_constraint[1]}.")
+        self.registerData = ClickableLineEdit("0")
+
+        # address and value constraints are the same
+        self.registerData.setToolTip(
+            f"Register data.\nValue between {self.address_constraint[0]} and {self.address_constraint[1]}")
+
+        self.layout.addRow("Register address: ", self.firstAddress)
+        self.layout.addRow("Register data: ", self.registerData)
+        self.setLayout(self.layout)
+
+
+class WriteMultipleRegistersWidget(DefaultWWidget):
+
+    def __init__(self):
+        super(WriteMultipleRegistersWidget, self).__init__()
+        self.firstAddress.setToolTip(
+            f"Address of the register.\nValue between {self.address_constraint[0]} and {self.address_constraint[1]}.")
+
+        self.layout.addRow("First register address: ", self.firstAddress)
+        self.setLayout(self.layout)
