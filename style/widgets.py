@@ -5,7 +5,6 @@ from enum import Enum
 from style.custom_elements import *
 from concurrent.futures import ThreadPoolExecutor
 
-
 class Codes(Enum):
     READ_COILS = '01'
     READ_DISCRETE_INPUTS = '02'
@@ -29,9 +28,9 @@ class ConnectWidget(QWidget):
     def __init__(self, parent=None):
         super(ConnectWidget, self).__init__(parent, QtCore.Qt.Window)
         self.button = QPushButton("Connect")
-        self.disconnected_movie = QtGui.QMovie("disconnected.gif")
-        self.connecting_movie = QtGui.QMovie("connecting.gif")
-        self.connected_movie = QtGui.QMovie("connected.gif")
+        self.disconnected_movie = QtGui.QMovie("resources/disconnected.gif")
+        self.connecting_movie = QtGui.QMovie("resources/connecting.gif")
+        self.connected_movie = QtGui.QMovie("resources/connected.gif")
         self.disconnected_movie.setScaledSize(QSize(50, 50))
         self.connecting_movie.setScaledSize(QSize(50, 50))
         self.connected_movie.setScaledSize(QSize(50, 50))
@@ -58,7 +57,7 @@ class DefaultWidget(QWidget):
 
 
 class DefaultRWidget(DefaultWidget):
-    address_constraint = (1, 65535)
+    address_constraint = (0, 65535)
 
     def __init__(self):
         super(DefaultRWidget, self).__init__()
@@ -69,7 +68,7 @@ class DefaultRWidget(DefaultWidget):
 
 
 class DefaultWWidget(DefaultWidget):
-    address_constraint = (1, 65535)
+    address_constraint = (0, 65535)
 
     def __init__(self):
         super(DefaultWWidget, self).__init__()
