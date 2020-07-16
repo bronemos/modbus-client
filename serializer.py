@@ -12,6 +12,9 @@ conf = {
 req_queue = queue.Queue()
 res_queue = queue.Queue()
 
+protocol_code = '0000'
+unit_address = '01'
+
 
 async def serialize():
     executor = ThreadPoolExecutor(max_workers=1)
@@ -19,10 +22,17 @@ async def serialize():
         'ws://' + ':'.join([conf['host'], conf['port']]) + '/ws')
 
     async def ws_reader():
+
+        def deserialize_message(message):
+            if type(message) == bytes:
+                print(message.hex())
+
+            else:
+                print(message)
+            return message
         while True:
-            msg = await ws.receive()
-            print(msg)
-            res_queue.put(msg.data)
+            message = await ws.receive()
+            res_queue.put(deserialize_message(message.data))
 
     async def ws_writer():
         while True:
@@ -42,9 +52,21 @@ async def serialize():
 
 
 def ext_get_user_message():
+    def serialize_message(message):
+        function_code = message['function_code']
+        function_code_hex = '{:02x}'.format(function_code)
+        message_id_hex = '{:04x}'.format(message['message_id'])
+        if 1 <= function_code <= 4:
+            first_address_hex = '{:04x}'.format(message['first_address'])
+            count_hex = '{:04x}'.format(message['count'])
+            return message_id_hex + protocol_code + '0006' + unit_address + function_code_hex + first_address_hex + count_hex
+        elif function_code == 5:
+            first_address_hex = '{:04x}'.format(message['first_address'])
+            status_hex = '0000' if message['status'] else 'FF00'
+            return message_id_hex + protocol_code + '0006' + unit_address + function_code_hex + first_address_hex + status_hex
+
     try:
-        x = req_queue.get()
-        return x
+        return serialize_message(req_queue.get())
     except queue.Empty:
         return
 

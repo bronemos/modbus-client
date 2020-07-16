@@ -121,11 +121,10 @@ class Application(QMainWindow):
         validate_and_send_thread.start()
 
     def _validate_and_send_thread(self):
-        hex_id_stripped = "{:04x}".format(self.last_id)
-        current = self.dropdown.currentIndex()
+        current = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
 
         # handling READ function validation and message assembly
-        if 0 <= current <= 3:
+        if 1 <= current <= 4:
             try:
                 curr_address = int(self.stackedMainWidget.currentWidget().firstAddress.text())
             except ValueError:
@@ -151,14 +150,13 @@ class Application(QMainWindow):
                 ErrorDialog(self, f"Count out of bounds.\nHas to be between {min_count} and {max_count}")
                 return
 
-            first_address_stripped = "{:04x}".format(int(self.stackedMainWidget.currentWidget().firstAddress.text()))
-            count_stripped = "{:04x}".format(int(self.stackedMainWidget.currentWidget().count.text()))
-            print(first_address_stripped)
-            message = hex_id_stripped + protocol_code + '0006' + unit_address + getattr(
-                Codes, self.dropdown.currentText().replace(' ', '_')).value + first_address_stripped + count_stripped
+            first_address = int(self.stackedMainWidget.currentWidget().firstAddress.text())
+            count = int(self.stackedMainWidget.currentWidget().count.text())
+            function_code = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
+            message = {"message_id": self.last_id, "function_code": function_code, "first_address": first_address, "count": count}
 
         # handling write single coil validation and assembly
-        elif current == 4:
+        elif current == 5:
 
             try:
                 curr_address = int(self.stackedMainWidget.currentWidget().firstAddress.text())
@@ -173,12 +171,11 @@ class Application(QMainWindow):
                 ErrorDialog(self, f"Coil address out of bounds.\nHas to be between {min_address} and {max_address}")
                 return
 
-            address_stripped = "{:04x}".format(int(self.stackedMainWidget.currentWidget().firstAddress.text()))
-            status = "0000" if self.stackedMainWidget.currentWidget().switch.isChecked() else "FF00"
-            message = hex_id_stripped + protocol_code + '0006' + unit_address + getattr(Codes,
-                                                                                        self.dropdown.currentText().replace(
-                                                                                            ' ',
-                                                                                            '_')).value + address_stripped + status
+            address_stripped = int(self.stackedMainWidget.currentWidget().firstAddress.text())
+            status = self.stackedMainWidget.currentWidget().switch.isChecked()
+            function_code = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
+
+            message = {"message_id": self.last_id, "first_address": address_stripped, "status": status, "function_code": function_code}
 
         elif current == 5:
             pass

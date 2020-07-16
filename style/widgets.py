@@ -6,12 +6,12 @@ from style.custom_elements import *
 from concurrent.futures import ThreadPoolExecutor
 
 class Codes(Enum):
-    READ_COILS = '01'
-    READ_DISCRETE_INPUTS = '02'
-    READ_HOLDING_REGISTERS = '03'
-    READ_INPUT_REGISTERS = '04'
-    WRITE_SINGLE_COIL = '05'
-    WRITE_SINGLE_REGISTER = '06'
+    READ_COILS = 1
+    READ_DISCRETE_INPUTS = 2
+    READ_HOLDING_REGISTERS = 3
+    READ_INPUT_REGISTERS = 4
+    WRITE_SINGLE_COIL = 5
+    WRITE_SINGLE_REGISTER = 6
     WRITE_MULTIPLE_REGISTERS = '10'
     READ_EXCEPTION_STATUS = '07'
     DIAGNOSTICS = '08'
