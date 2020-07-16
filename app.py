@@ -191,7 +191,7 @@ class Application(QMainWindow):
         if current_selection == "READ COILS":
             self.res_message.setText("Coils set are: " + str(message))
         elif current_selection == "READ DISCRETE INPUTS":
-            self.res_message.setText("")
+            self.res_message.setText("Discrete inputs status: ")
         elif current_selection == "READ HOLDING REGISTERS":
             self.res_message.setText("")
         elif current_selection == "READ INPUT REGISTERS":
