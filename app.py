@@ -187,14 +187,14 @@ class Application(QMainWindow):
 
     async def show_response(self):
         message = await asyncio.get_event_loop().run_in_executor(self.executor, self._get_message)
-        current_selection = self.dropdown.currentText()
-        if current_selection == "READ COILS":
-            self.res_message.setText("Coils set are: " + str(message))
-        elif current_selection == "READ DISCRETE INPUTS":
+        current_selection = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
+        if current_selection == 1:
+            self.res_message.setText("Coils set are: " + ','.join(message['coils_set']))
+        elif current_selection == 2:
             self.res_message.setText("Discrete inputs status: ")
-        elif current_selection == "READ HOLDING REGISTERS":
+        elif current_selection == 3:
             self.res_message.setText("")
-        elif current_selection == "READ INPUT REGISTERS":
+        elif current_selection == 4:
             self.res_message.setText("")
 
     def _get_message(self):

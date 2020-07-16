@@ -25,11 +25,31 @@ async def serialize():
 
         def deserialize_message(message):
             if type(message) == bytes:
-                print(message.hex())
+                function_code = message[7]
+                print(message)
+                message_hex = message.hex()
+                print(message_hex)
+                if function_code == 1:
+                    coils_set = list()
+                    coil_status = ''.join(['{:04b}'.format(int((x+y)[::-1]), 16) for x, y in zip(message_hex[::2], message_hex[1::2])])
+                    for no, status in enumerate(coil_status):
+                        if status == '1':
+                            coils_set.append(str(no))
+                    print(f"coil status: {coil_status}, {len(coil_status)}")
+                    return {'coils_set': coils_set}
+                elif function_code == 2:
+                    pass
+                elif function_code == 3:
+                    pass
+                elif function_code == 4:
+                    pass
+                elif function_code:
+                    pass
 
             else:
                 print(message)
             return message
+
         while True:
             message = await ws.receive()
             res_queue.put(deserialize_message(message.data))
