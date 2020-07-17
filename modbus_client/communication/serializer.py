@@ -31,7 +31,8 @@ async def serialize():
                 print(message_hex)
                 if function_code == 1:
                     coils_set = list()
-                    coil_status = ''.join(['{:04b}'.format(int((x+y)[::-1]), 16) for x, y in zip(message_hex[::2], message_hex[1::2])])
+                    coil_status = ''.join(
+                        ['{:04b}'.format(int((x + y)[::-1]), 16) for x, y in zip(message_hex[::2], message_hex[1::2])])
                     for no, status in enumerate(coil_status):
                         if status == '1':
                             coils_set.append(str(no))

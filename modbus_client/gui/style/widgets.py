@@ -1,9 +1,8 @@
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtCore
 from enum import Enum
-from style.custom_elements import *
+from modbus_client.gui.style.custom_elements import *
 from concurrent.futures import ThreadPoolExecutor
+
 
 class Codes(Enum):
     READ_COILS = 1
@@ -28,9 +27,9 @@ class ConnectWidget(QWidget):
     def __init__(self, parent=None):
         super(ConnectWidget, self).__init__(parent, QtCore.Qt.Window)
         self.button = QPushButton("Connect")
-        self.disconnected_movie = QtGui.QMovie("resources/disconnected.gif")
-        self.connecting_movie = QtGui.QMovie("resources/connecting.gif")
-        self.connected_movie = QtGui.QMovie("resources/connected.gif")
+        self.disconnected_movie = QtGui.QMovie("../resources/disconnected.gif")
+        self.connecting_movie = QtGui.QMovie("../resources/connecting.gif")
+        self.connected_movie = QtGui.QMovie("../resources/connected.gif")
         self.disconnected_movie.setScaledSize(QSize(50, 50))
         self.connecting_movie.setScaledSize(QSize(50, 50))
         self.connected_movie.setScaledSize(QSize(50, 50))

@@ -1,12 +1,11 @@
 import sys
-import serializer
+from modbus_client.communication import serializer
 import asyncio
 import queue
 
 from threading import Thread
-from style.widgets import *
+from modbus_client.gui.style.widgets import *
 from PySide2.QtWidgets import *
-from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtCore import *
 from concurrent.futures import ThreadPoolExecutor
 
