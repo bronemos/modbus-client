@@ -42,7 +42,7 @@ class WSTunnel:
             while True:
                 try:
                     msg = await ws.receive_bytes()
-                    #print(datetime.now().strftime("%H:%M:%S") + msg)
+                    # print(datetime.now().strftime("%H:%M:%S") + msg)
                 except Exception:
                     break
                 writer.write(msg)
@@ -69,5 +69,5 @@ class WSTunnel:
                             shutdown_timeout=0)
 
 
-if __name__ == "__main__":
-    WSTunnel()
+if __name__ == '__main__':
+    sys.exit(WSTunnel())

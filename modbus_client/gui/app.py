@@ -1,13 +1,28 @@
 import sys
-from modbus_client.communication import serializer
 import asyncio
 import queue
 
+from modbus_client.communication import serializer
+from enum import Enum
+from modbus_client.gui.widgets import *
 from threading import Thread
-from modbus_client.gui.style.widgets import *
+from modbus_client.gui.style.custom_elements import *
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from concurrent.futures import ThreadPoolExecutor
+
+class Codes(Enum):
+    READ_COILS = 1
+    READ_DISCRETE_INPUTS = 2
+    READ_HOLDING_REGISTERS = 3
+    READ_INPUT_REGISTERS = 4
+    WRITE_SINGLE_COIL = 5
+    WRITE_SINGLE_REGISTER = 6
+    WRITE_MULTIPLE_REGISTERS = '10'
+    READ_EXCEPTION_STATUS = '07'
+    DIAGNOSTICS = '08'
+    WRITE_MULTIPLE_COILS = '0F'
+
 
 protocol_code = '0000'
 unit_address = '01'
@@ -122,31 +137,12 @@ class Application(QMainWindow):
     def _validate_and_send_thread(self):
         current = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
 
+
         # handling READ function validation and message assembly
         if 1 <= current <= 4:
-            try:
-                curr_address = int(self.stackedMainWidget.currentWidget().firstAddress.text())
-            except ValueError:
-                ErrorDialog(self, "Incorrect address input type. Must be integer.")
-                return
 
-            min_address = int(self.stackedMainWidget.currentWidget().address_constraint[0])
-            max_address = int(self.stackedMainWidget.currentWidget().address_constraint[1])
-
-            if not (min_address <= curr_address <= max_address):
-                ErrorDialog(self, f"First address out of bounds.\nHas to be between {min_address} and {max_address}")
-                return
-
-            try:
-                min_count = int(self.stackedMainWidget.currentWidget().count_constraint[0])
-                max_count = int(self.stackedMainWidget.currentWidget().count_constraint[1])
-                curr_count = int(self.stackedMainWidget.currentWidget().count.text())
-            except ValueError:
-                ErrorDialog(self, "Incorrect count input type, must be integer.")
-                return
-
-            if not (min_count <= curr_count <= max_count):
-                ErrorDialog(self, f"Count out of bounds.\nHas to be between {min_count} and {max_count}")
+            if not self.stackedMainWidget.currentWidget().validate_input(self):
+                print("Failed")
                 return
 
             first_address = int(self.stackedMainWidget.currentWidget().firstAddress.text())
@@ -214,7 +210,3 @@ def run_gui():
     mainWindow.setPalette(p)
     mainWindow.show()
     sys.exit(app.exec_())
-
-
-if __name__ == "__main__":
-    run_gui()
