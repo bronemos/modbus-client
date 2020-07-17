@@ -1,5 +1,5 @@
-from modbus_client.gui.widgets.write_widgets.default_write_widget import DefaultWWidget
 from modbus_client.gui.style.custom_elements import ClickableLineEdit
+from modbus_client.gui.widgets.write_widgets.default_write_widget import DefaultWWidget
 
 
 class WriteSingleRegisterWidget(DefaultWWidget):

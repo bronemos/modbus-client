@@ -1,9 +1,9 @@
 import asyncio
-import aiohttp.web
 import contextlib
-import json
 import sys
 from datetime import datetime
+
+import aiohttp.web
 
 
 class WSTunnel:

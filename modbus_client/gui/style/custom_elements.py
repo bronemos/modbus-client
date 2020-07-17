@@ -1,8 +1,7 @@
 import PySide2
-
+from PySide2 import QtGui
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
-from PySide2 import QtGui
 
 
 class ClickableLineEdit(QLineEdit):

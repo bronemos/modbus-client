@@ -7,22 +7,23 @@ class DefaultRWidget(DefaultWidget):
 
     def __init__(self):
         super(DefaultRWidget, self).__init__()
-        self.firstAddress = ClickableLineEdit("0")
+        self.address = ClickableLineEdit("0")
         self.count = ClickableLineEdit("1")
         self.count.focused.connect(lambda: self.clear_line(self.count))
-        self.firstAddress.focused.connect(lambda: self.clear_line(self.firstAddress))
+        self.address.focused.connect(lambda: self.clear_line(self.address))
 
     def validate_input(self, window):
 
         try:
-            curr_address = int(self.firstAddress.text())
+            curr_address = int(self.address.text())
         except ValueError:
             ErrorDialog(window, "Incorrect address input type. Must be integer.")
             return False
 
         if not (self.address_constraint[0] <= curr_address <= self.address_constraint[1]):
             ErrorDialog(window,
-                        f"First address out of bounds.\nHas to be between {self.address_constraint[0]} and {self.address_constraint[1]}")
+                        f"First address out of bounds.\n"
+                        f"Has to be between {self.address_constraint[0]} and {self.address_constraint[1]}")
             return False
 
         try:
@@ -33,7 +34,15 @@ class DefaultRWidget(DefaultWidget):
 
         if not (self.count_constraint[0] <= curr_count <= self.count_constraint[1]):
             ErrorDialog(window,
-                        f"Count out of bounds.\nHas to be between {self.count_constraint[0]} and {self.count_constraint[1]}")
+                        f"Count out of bounds.\n"
+                        f"Has to be between {self.count_constraint[0]} and {self.count_constraint[1]}")
             return False
 
         return True
+
+    def generate_message(self, message_id, function_code):
+
+        return {'message_id': message_id,
+                'function_code': function_code,
+                'address': int(self.address.text()),
+                'count': int(self.count.text())}

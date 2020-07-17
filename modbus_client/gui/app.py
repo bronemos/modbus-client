@@ -1,38 +1,22 @@
-import sys
 import asyncio
 import queue
-
-from modbus_client.communication import serializer
-from enum import Enum
-from modbus_client.gui.widgets import *
-from threading import Thread
-from modbus_client.gui.style.custom_elements import *
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
+import sys
 from concurrent.futures import ThreadPoolExecutor
+from threading import Thread
 
-class Codes(Enum):
-    READ_COILS = 1
-    READ_DISCRETE_INPUTS = 2
-    READ_HOLDING_REGISTERS = 3
-    READ_INPUT_REGISTERS = 4
-    WRITE_SINGLE_COIL = 5
-    WRITE_SINGLE_REGISTER = 6
-    WRITE_MULTIPLE_REGISTERS = '10'
-    READ_EXCEPTION_STATUS = '07'
-    DIAGNOSTICS = '08'
-    WRITE_MULTIPLE_COILS = '0F'
-
+from modbus_client.codes import Codes
+from modbus_client.communication import serializer
+from modbus_client.gui.style.custom_elements import *
+from modbus_client.gui.widgets import *
 
 protocol_code = '0000'
 unit_address = '01'
 
 
 class Application(QMainWindow):
-    threadpool = QThreadPool()
     executor = ThreadPoolExecutor(max_workers=1)
     connected = False
-    last_id = 0
+    message_id = 0
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
@@ -135,53 +119,20 @@ class Application(QMainWindow):
         validate_and_send_thread.start()
 
     def _validate_and_send_thread(self):
-        current = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
 
+        if not self.stackedMainWidget.currentWidget().validate_input(self):
+            return
 
-        # handling READ function validation and message assembly
-        if 1 <= current <= 4:
-
-            if not self.stackedMainWidget.currentWidget().validate_input(self):
-                print("Failed")
-                return
-
-            first_address = int(self.stackedMainWidget.currentWidget().firstAddress.text())
-            count = int(self.stackedMainWidget.currentWidget().count.text())
-            function_code = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
-            message = {"message_id": self.last_id, "function_code": function_code, "first_address": first_address, "count": count}
-
-        # handling write single coil validation and assembly
-        elif current == 5:
-
-            try:
-                curr_address = int(self.stackedMainWidget.currentWidget().firstAddress.text())
-            except ValueError:
-                ErrorDialog(self, "Incorrect address input type. Must be integer.")
-                return
-
-            min_address = int(self.stackedMainWidget.currentWidget().address_constraint[0])
-            max_address = int(self.stackedMainWidget.currentWidget().address_constraint[1])
-
-            if not (min_address <= curr_address <= max_address):
-                ErrorDialog(self, f"Coil address out of bounds.\nHas to be between {min_address} and {max_address}")
-                return
-
-            address_stripped = int(self.stackedMainWidget.currentWidget().firstAddress.text())
-            status = self.stackedMainWidget.currentWidget().switch.isChecked()
-            function_code = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
-
-            message = {"message_id": self.last_id, "first_address": address_stripped, "status": status, "function_code": function_code}
-
-        elif current == 5:
-            pass
+        message = self.stackedMainWidget.currentWidget().generate_message(self.message_id)
 
         print(message)
-        self.last_id += 1
+        self.message_id += 1
         serializer.req_queue.put(message)
         asyncio.new_event_loop().run_until_complete(self.show_response())
 
     async def show_response(self):
         message = await asyncio.get_event_loop().run_in_executor(self.executor, self._get_message)
+        print(message)
         current_selection = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
         if current_selection == 1:
             self.res_message.setText("Coils set are: " + ','.join(message['coils_set']))
@@ -202,7 +153,7 @@ class Application(QMainWindow):
 
 def run_gui():
     app = QApplication()
-    app.setApplicationDisplayName("Modbus Client GUI")
+    app.setApplicationDisplayName('Modbus Client GUI')
     app.setStyle('Fusion')
     mainWindow = Application()
     p = mainWindow.palette()

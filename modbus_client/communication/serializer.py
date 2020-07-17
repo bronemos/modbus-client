@@ -1,8 +1,8 @@
 import asyncio
-import aiohttp
 import queue
-
 from concurrent.futures import ThreadPoolExecutor
+
+import aiohttp
 
 conf = {
     'host': 'localhost',
@@ -36,7 +36,7 @@ async def serialize():
                     for no, status in enumerate(coil_status):
                         if status == '1':
                             coils_set.append(str(no))
-                    print(f"coil status: {coil_status}, {len(coil_status)}")
+                    print(f'coil status: {coil_status}, {len(coil_status)}')
                     return {'coils_set': coils_set}
                 elif function_code == 2:
                     pass
@@ -58,7 +58,7 @@ async def serialize():
     async def ws_writer():
         while True:
             user_message = await asyncio.get_event_loop().run_in_executor(executor, ext_get_user_message)
-            if user_message == "DC":
+            if user_message == 'DC':
                 return
             try:
                 await ws.send_bytes(bytes.fromhex(user_message))
@@ -75,16 +75,36 @@ async def serialize():
 def ext_get_user_message():
     def serialize_message(message):
         function_code = message['function_code']
+        print(function_code)
         function_code_hex = '{:02x}'.format(function_code)
         message_id_hex = '{:04x}'.format(message['message_id'])
         if 1 <= function_code <= 4:
-            first_address_hex = '{:04x}'.format(message['first_address'])
+            first_address_hex = '{:04x}'.format(message['address'])
             count_hex = '{:04x}'.format(message['count'])
-            return message_id_hex + protocol_code + '0006' + unit_address + function_code_hex + first_address_hex + count_hex
+            print((message_id_hex
+                   + protocol_code
+                   + '0006'
+                   + unit_address
+                   + function_code_hex
+                   + first_address_hex
+                   + count_hex))
+            return (message_id_hex
+                    + protocol_code
+                    + '0006'
+                    + unit_address
+                    + function_code_hex
+                    + first_address_hex
+                    + count_hex)
         elif function_code == 5:
             first_address_hex = '{:04x}'.format(message['first_address'])
             status_hex = '0000' if message['status'] else 'FF00'
-            return message_id_hex + protocol_code + '0006' + unit_address + function_code_hex + first_address_hex + status_hex
+            return (message_id_hex
+                    + protocol_code
+                    + '0006'
+                    + unit_address
+                    + function_code_hex
+                    + first_address_hex
+                    + status_hex)
 
     try:
         return serialize_message(req_queue.get())

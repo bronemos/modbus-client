@@ -1,4 +1,5 @@
 from PySide2 import QtCore
+
 from modbus_client.gui.style.custom_elements import *
 
 

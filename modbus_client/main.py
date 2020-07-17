@@ -1,7 +1,6 @@
 import sys
+
 import modbus_client.gui.app
-from threading import Thread
-import tunnel.wstunnel
 
 
 def main():
