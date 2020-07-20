@@ -135,13 +135,15 @@ class Application(QMainWindow):
         print(message)
         current_selection = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
         if current_selection == 1:
-            self.res_message.setText("Coils set are: " + ','.join(message['set_list']))
+            self.res_message.setText(f"Coils set are: {','.join(message['set_list'])}" if len(message['set_list'])
+                                     else "No coils are set")
         elif current_selection == 2:
-            self.res_message.setText("Discrete inputs status: ")
+            self.res_message.setText(f"Discrete inputs status: {','.join(message['set_list'])}" if len(message['set_list'])
+                                     else "No discrete inputs are set.")
         elif current_selection == 3:
-            self.res_message.setText("")
+            self.res_message.setText(f"Holding registers data: {','.join(message['register_data'])}")
         elif current_selection == 4:
-            self.res_message.setText("")
+            self.res_message.setText(f"Input registers data: {','.join(message['register_data'])}")
 
     def _get_message(self):
         try:

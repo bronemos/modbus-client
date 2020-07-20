@@ -1,5 +1,6 @@
 from modbus_client.gui.style.custom_elements import ClickableLineEdit
 from modbus_client.gui.widgets.write_widgets.default_write_widget import DefaultWWidget
+from modbus_client.codes import Codes
 
 
 class WriteSingleRegisterWidget(DefaultWWidget):
@@ -17,3 +18,12 @@ class WriteSingleRegisterWidget(DefaultWWidget):
         self.layout.addRow("Register address: ", self.firstAddress)
         self.layout.addRow("Register data: ", self.registerData)
         self.setLayout(self.layout)
+
+    def validate_input(self, window):
+        return True
+
+    def generate_message(self, last_id):
+        return {"message_id": last_id,
+                "address": int(self.firstAddress.text()),
+                "data: ": int(self.registerData.text()),
+                "function_code": Codes.WRITE_SINGLE_REGISTER.value}

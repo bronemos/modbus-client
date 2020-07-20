@@ -28,8 +28,8 @@ async def serialize():
         def deserialize_message(message):
             if type(message) == bytes:
                 function_code = message[7]
-                print(message)
-                message_hex = message[8:].hex()
+                print(f"function code:{function_code}")
+                message_hex = message[9:].hex()
                 print("msg hex: ", message_hex)
                 if function_code == 1 or function_code == 2:
                     set_list = list()
@@ -42,12 +42,12 @@ async def serialize():
                             set_list.append(str(no + first_address))
                     print(f'coil status: {statuses}, {len(statuses)}')
                     return {'set_list': set_list}
-                elif function_code == 2:
-                    pass
-                elif function_code == 3:
-                    pass
-                elif function_code == 4:
-                    pass
+                elif function_code == 3 or function_code == 4:
+                    data_list = list()
+                    data_list.extend(
+                        [str(int(''.join(message_hex[i:i + 4]), 16)) for i in range(0, len(message_hex), 4)])
+                    print(data_list)
+                    return {'register_data': data_list}
                 elif function_code:
                     pass
 
@@ -87,13 +87,13 @@ def ext_get_user_message():
         if 1 <= function_code <= 4:
             first_address_hex = '{:04x}'.format(message['address'])
             count_hex = '{:04x}'.format(message['count'])
-            print((message_id_hex
-                   + protocol_code
-                   + '0006'
-                   + unit_address
-                   + function_code_hex
-                   + first_address_hex
-                   + count_hex))
+            print(message_id_hex
+                  + protocol_code
+                  + '0006'
+                  + unit_address
+                  + function_code_hex
+                  + first_address_hex
+                  + count_hex)
             return (message_id_hex
                     + protocol_code
                     + '0006'
@@ -118,6 +118,23 @@ def ext_get_user_message():
                     + function_code_hex
                     + first_address_hex
                     + status_hex)
+        elif function_code == 6:
+            first_address_hex = '{:04x}'.format(message['address'])
+            data_hex = '{:04x}'.format(message['data'])
+            print((message_id_hex
+                   + protocol_code
+                   + '0006'
+                   + unit_address
+                   + function_code_hex
+                   + first_address_hex
+                   + data_hex))
+            return (message_id_hex
+                    + protocol_code
+                    + '0006'
+                    + unit_address
+                    + function_code_hex
+                    + first_address_hex
+                    + data_hex)
 
     try:
         return serialize_message(req_queue.get())
