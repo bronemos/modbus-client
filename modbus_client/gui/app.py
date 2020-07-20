@@ -135,7 +135,7 @@ class Application(QMainWindow):
         print(message)
         current_selection = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
         if current_selection == 1:
-            self.res_message.setText("Coils set are: " + ','.join(message['coils_set']))
+            self.res_message.setText("Coils set are: " + ','.join(message['set_list']))
         elif current_selection == 2:
             self.res_message.setText("Discrete inputs status: ")
         elif current_selection == 3:

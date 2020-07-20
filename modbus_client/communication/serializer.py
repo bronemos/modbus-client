@@ -15,6 +15,8 @@ res_queue = queue.Queue()
 protocol_code = '0000'
 unit_address = '01'
 
+first_address = 0
+
 
 async def serialize():
     executor = ThreadPoolExecutor(max_workers=1)
@@ -27,17 +29,19 @@ async def serialize():
             if type(message) == bytes:
                 function_code = message[7]
                 print(message)
-                message_hex = message.hex()
-                print(message_hex)
-                if function_code == 1:
-                    coils_set = list()
-                    coil_status = ''.join(
-                        ['{:04b}'.format(int((x + y)[::-1]), 16) for x, y in zip(message_hex[::2], message_hex[1::2])])
-                    for no, status in enumerate(coil_status):
+                message_hex = message[8:].hex()
+                print("msg hex: ", message_hex)
+                if function_code == 1 or function_code == 2:
+                    set_list = list()
+                    statuses = ''.join([z[::-1] for z in
+                                        ['{:08b}'.format(int((x + y), 16)) for x, y in
+                                         zip(message_hex[::2], message_hex[1::2])]])
+                    print(statuses)
+                    for no, status in enumerate(statuses):
                         if status == '1':
-                            coils_set.append(str(no))
-                    print(f'coil status: {coil_status}, {len(coil_status)}')
-                    return {'coils_set': coils_set}
+                            set_list.append(str(no + first_address))
+                    print(f'coil status: {statuses}, {len(statuses)}')
+                    return {'set_list': set_list}
                 elif function_code == 2:
                     pass
                 elif function_code == 3:
@@ -74,7 +78,9 @@ async def serialize():
 
 def ext_get_user_message():
     def serialize_message(message):
+        global first_address
         function_code = message['function_code']
+        first_address = message['address']
         print(function_code)
         function_code_hex = '{:02x}'.format(function_code)
         message_id_hex = '{:04x}'.format(message['message_id'])
@@ -96,8 +102,15 @@ def ext_get_user_message():
                     + first_address_hex
                     + count_hex)
         elif function_code == 5:
-            first_address_hex = '{:04x}'.format(message['first_address'])
-            status_hex = '0000' if message['status'] else 'FF00'
+            first_address_hex = '{:04x}'.format(message['address'])
+            status_hex = 'FF00' if message['status'] else '0000'
+            print(message_id_hex
+                  + protocol_code
+                  + '0006'
+                  + unit_address
+                  + function_code_hex
+                  + first_address_hex
+                  + status_hex)
             return (message_id_hex
                     + protocol_code
                     + '0006'
