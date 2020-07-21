@@ -22,6 +22,13 @@ class Application(QMainWindow):
 
         self.stackedMainWidget = QStackedWidget()
 
+        self.groupBox = QGroupBox()
+        self.groupBox.setAlignment(Qt.AlignCenter)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.stackedMainWidget)
+        self.groupBox.setLayout(layout)
+
         self.mainWidget = QWidget()
 
         self.ConnectWidget = ConnectWidget()
@@ -55,19 +62,15 @@ class Application(QMainWindow):
         form.addRow("Unit address: ", self.unitAddress)
         form.addRow("Function: ", self.dropdown)
         layout.addWidget(self.ConnectWidget)
-        req_label = QLabel("REQUEST")
-        req_label.setAlignment(Qt.AlignCenter)
 
-        layout.addWidget(req_label)
-        layout.addWidget(QHLine())
-
-        form.addRow(self.stackedMainWidget)
+        form.addRow(self.groupBox)
 
         self.sendButton = QPushButton("SEND")
         self.sendButton.clicked.connect(self._validate_and_queue)
         form.addRow(self.sendButton)
 
-        self.reqWidget = QWidget()
+        self.reqWidget = QGroupBox("REQUEST")
+        self.reqWidget.setAlignment(Qt.AlignCenter)
         self.reqWidget.setEnabled(self.connected)
 
         self.reqWidget.setLayout(form)
