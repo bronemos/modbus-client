@@ -4,8 +4,6 @@ import modbus_client.gui.app
 
 
 def main():
-    #tunnel_thread = Thread(target=tunnel.wstunnel.WSTunnel)
-    #tunnel_thread.start()
     modbus_client.gui.app.run_gui()
 
 

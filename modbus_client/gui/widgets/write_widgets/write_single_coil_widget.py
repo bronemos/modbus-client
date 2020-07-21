@@ -32,9 +32,10 @@ class WriteSingleCoilWidget(DefaultWWidget):
 
         return True
 
-    def generate_message(self, last_id):
+    def generate_message(self, last_id, unit_address):
 
         return {"message_id": last_id,
+                'unit_address': unit_address,
                 "address": int(self.firstAddress.text()),
                 "status": self.switch.isChecked(),
                 "function_code": Codes.WRITE_SINGLE_COIL.value}

@@ -1,26 +1,25 @@
 from PySide2.QtWidgets import QPushButton
 
-from modbus_client.codes import Codes
-from modbus_client.gui.style.custom_elements import ErrorDialog
 from modbus_client.gui.widgets.write_widgets.default_write_widget import DefaultWWidget
+from modbus_client.gui.style.custom_elements import ErrorDialog
 
 
-class WriteMultipleRegistersWidget(DefaultWWidget):
+class WriteMultipleCoilsWidget(DefaultWWidget):
 
     def __init__(self):
-        super(WriteMultipleRegistersWidget, self).__init__()
-        self.firstAddress.setToolTip(
-            f"Address of the register.\nValue between {self.address_constraint[0]} and {self.address_constraint[1]}.")
+        super(WriteMultipleCoilsWidget, self).__init__()
+        self.firstAddress.setToolTip(f"Addres of the first coil.\n"
+                                     f"Value between {self.address_constraint[0]} and {self.address_constraint[1]}")
+        self.firstAddress.focused.connect(lambda: self.clear_line(self.firstAddress))
 
         self.importButton = QPushButton("Import CSV")
         self.importButton.clicked.connect(self.import_csv)
 
-        self.layout.addRow("First register address: ", self.firstAddress)
+        self.layout.addRow("First coil address:", self.firstAddress)
         self.layout.addRow(self.importButton)
         self.setLayout(self.layout)
 
     def validate_input(self, window):
-
         try:
             curr_address = int(self.firstAddress.text())
         except ValueError:
@@ -29,7 +28,7 @@ class WriteMultipleRegistersWidget(DefaultWWidget):
 
         if not (self.address_constraint[0] <= curr_address <= self.address_constraint[1]):
             ErrorDialog(window,
-                        f"Register address out of bounds.\n"
+                        f"Coil address out of bounds.\n"
                         f"Has to be between {self.address_constraint[0]} and {self.address_constraint[1]}")
             return False
 
@@ -46,9 +45,5 @@ class WriteMultipleRegistersWidget(DefaultWWidget):
 
         return True
 
-    def generate_message(self, last_id, unit_address):
-        return {'message_id': last_id,
-                'unit_address': unit_address,
-                'address': int(self.firstAddress.text()),
-                'data': self.data_list,
-                'function_code': Codes.WRITE_MULTIPLE_REGISTERS.value}
+    def generate_message(self):
+        pass

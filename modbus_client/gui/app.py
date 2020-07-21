@@ -10,7 +10,6 @@ from modbus_client.gui.style.custom_elements import *
 from modbus_client.gui.widgets import *
 
 protocol_code = '0000'
-unit_address = '01'
 
 
 class Application(QMainWindow):
@@ -35,6 +34,7 @@ class Application(QMainWindow):
         self.WriteSingleCoilWidget = WriteSingleCoilWidget()
         self.WriteSingleRegisterWidget = WriteSingleRegisterWidget()
         self.WriteMultipleRegistersWidget = WriteMultipleRegistersWidget()
+        self.WriteMultipleCoilsWidget = WriteMultipleCoilsWidget()
 
         self.stackedMainWidget.addWidget(self.ReadCoilsWidget)
         self.stackedMainWidget.addWidget(self.ReadDiscreteInputsWidget)
@@ -42,6 +42,7 @@ class Application(QMainWindow):
         self.stackedMainWidget.addWidget(self.ReadInputRegistersWidget)
         self.stackedMainWidget.addWidget(self.WriteSingleCoilWidget)
         self.stackedMainWidget.addWidget(self.WriteSingleRegisterWidget)
+        self.stackedMainWidget.addWidget(self.WriteMultipleCoilsWidget)
         self.stackedMainWidget.addWidget(self.WriteMultipleRegistersWidget)
 
         layout = QVBoxLayout()
@@ -49,6 +50,9 @@ class Application(QMainWindow):
         self.dropdown = QComboBox()
         self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
         self.dropdown.activated[str].connect(self._change_widget)
+        self.unitAddress = ClickableLineEdit('1')
+        self.unitAddress.setToolTip("Unit address.\nValue between 1 and 65535")
+        form.addRow("Unit address: ", self.unitAddress)
         form.addRow("Function: ", self.dropdown)
         layout.addWidget(self.ConnectWidget)
         req_label = QLabel("REQUEST")
@@ -60,7 +64,7 @@ class Application(QMainWindow):
         form.addRow(self.stackedMainWidget)
 
         self.sendButton = QPushButton("SEND")
-        self.sendButton.clicked.connect(self._validate_and_send)
+        self.sendButton.clicked.connect(self._validate_and_queue)
         form.addRow(self.sendButton)
 
         self.reqWidget = QWidget()
@@ -114,16 +118,17 @@ class Application(QMainWindow):
         self.stackedMainWidget.setCurrentIndex(current)
         self.dropdown.setCurrentIndex(current)
 
-    def _validate_and_send(self):
-        validate_and_send_thread = Thread(target=self._validate_and_send_thread)
-        validate_and_send_thread.start()
-
-    def _validate_and_send_thread(self):
+    def _validate_and_queue(self):
+        try:
+            unit_address = int(self.unitAddress.text())
+        except ValueError:
+            ErrorDialog(self, "Incorrect unit address value.")
+            return
 
         if not self.stackedMainWidget.currentWidget().validate_input(self):
             return
 
-        message = self.stackedMainWidget.currentWidget().generate_message(self.message_id)
+        message = self.stackedMainWidget.currentWidget().generate_message(self.message_id, unit_address)
 
         print(message)
         self.message_id += 1
@@ -138,8 +143,9 @@ class Application(QMainWindow):
             self.res_message.setText(f"Coils set are: {','.join(message['set_list'])}" if len(message['set_list'])
                                      else "No coils are set")
         elif current_selection == 2:
-            self.res_message.setText(f"Discrete inputs status: {','.join(message['set_list'])}" if len(message['set_list'])
-                                     else "No discrete inputs are set.")
+            self.res_message.setText(
+                f"Discrete inputs status: {','.join(message['set_list'])}" if len(message['set_list'])
+                else "No discrete inputs are set.")
         elif current_selection == 3:
             self.res_message.setText(f"Holding registers data: {','.join(message['register_data'])}")
         elif current_selection == 4:

@@ -13,9 +13,8 @@ req_queue = queue.Queue()
 res_queue = queue.Queue()
 
 protocol_code = '0000'
-unit_address = '01'
 
-first_address = 0
+response_first_address = 0
 
 
 async def serialize():
@@ -39,7 +38,7 @@ async def serialize():
                     print(statuses)
                     for no, status in enumerate(statuses):
                         if status == '1':
-                            set_list.append(str(no + first_address))
+                            set_list.append(str(no + response_first_address))
                     print(f'coil status: {statuses}, {len(statuses)}')
                     return {'set_list': set_list}
                 elif function_code == 3 or function_code == 4:
@@ -78,62 +77,89 @@ async def serialize():
 
 def ext_get_user_message():
     def serialize_message(message):
-        global first_address
+        global response_first_address
         function_code = message['function_code']
-        first_address = message['address']
-        print(function_code)
+        response_first_address = message['address']
+        unit_address_hex = '{:02x}'.format(message['unit_address'])
         function_code_hex = '{:02x}'.format(function_code)
         message_id_hex = '{:04x}'.format(message['message_id'])
         if 1 <= function_code <= 4:
             first_address_hex = '{:04x}'.format(message['address'])
             count_hex = '{:04x}'.format(message['count'])
+            length_hex = '0006'
             print(message_id_hex
                   + protocol_code
-                  + '0006'
-                  + unit_address
+                  + length_hex
+                  + unit_address_hex
                   + function_code_hex
                   + first_address_hex
                   + count_hex)
             return (message_id_hex
                     + protocol_code
-                    + '0006'
-                    + unit_address
+                    + length_hex
+                    + unit_address_hex
                     + function_code_hex
                     + first_address_hex
                     + count_hex)
         elif function_code == 5:
             first_address_hex = '{:04x}'.format(message['address'])
             status_hex = 'FF00' if message['status'] else '0000'
+            length_hex = '0006'
             print(message_id_hex
                   + protocol_code
-                  + '0006'
-                  + unit_address
+                  + length_hex
+                  + unit_address_hex
                   + function_code_hex
                   + first_address_hex
                   + status_hex)
             return (message_id_hex
                     + protocol_code
-                    + '0006'
-                    + unit_address
+                    + length_hex
+                    + unit_address_hex
                     + function_code_hex
                     + first_address_hex
                     + status_hex)
         elif function_code == 6:
             first_address_hex = '{:04x}'.format(message['address'])
             data_hex = '{:04x}'.format(message['data'])
-            print((message_id_hex
-                   + protocol_code
-                   + '0006'
-                   + unit_address
-                   + function_code_hex
-                   + first_address_hex
-                   + data_hex))
+            length_hex = '0006'
+            print(message_id_hex
+                  + protocol_code
+                  + length_hex
+                  + unit_address_hex
+                  + function_code_hex
+                  + first_address_hex
+                  + data_hex)
             return (message_id_hex
                     + protocol_code
-                    + '0006'
-                    + unit_address
+                    + length_hex
+                    + unit_address_hex
                     + function_code_hex
                     + first_address_hex
+                    + data_hex)
+        elif function_code == 16:
+            first_address_hex = '{:04x}'.format(message['address'])
+            length_hex = '{:04x}'.format((1 + 1 + 2 + 2 + 1 + 2 * len(message['data'])))
+            data_hex = ''.join(['{:04x}'.format(x) for x in message['data']])
+            register_count_hex = '{:04x}'.format(len(message['data']))
+            byte_count_hex = '{:02x}'.format(2 * len(message['data']))
+            print(message_id_hex
+                  + protocol_code
+                  + length_hex
+                  + unit_address_hex
+                  + function_code_hex
+                  + first_address_hex
+                  + register_count_hex
+                  + byte_count_hex
+                  + data_hex)
+            return (message_id_hex
+                    + protocol_code
+                    + length_hex
+                    + unit_address_hex
+                    + function_code_hex
+                    + first_address_hex
+                    + register_count_hex
+                    + byte_count_hex
                     + data_hex)
 
     try:

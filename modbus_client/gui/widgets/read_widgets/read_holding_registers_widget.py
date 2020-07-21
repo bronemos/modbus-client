@@ -15,5 +15,6 @@ class ReadHoldingRegistersWidget(DefaultRWidget):
         self.layout.addRow("Register count: ", self.count)
         self.setLayout(self.layout)
 
-    def generate_message(self, message_id):
-        return super(ReadHoldingRegistersWidget, self).generate_message(message_id, Codes.READ_HOLDING_REGISTERS.value)
+    def generate_message(self, message_id, unit_address):
+        return super(ReadHoldingRegistersWidget, self).generate_message(message_id, Codes.READ_HOLDING_REGISTERS.value,
+                                                                        unit_address)

@@ -29,7 +29,7 @@ class DefaultRWidget(DefaultWidget):
         try:
             curr_count = int(self.count.text())
         except ValueError:
-            ErrorDialog(window, "Incorrect count type, must be integer.")
+            ErrorDialog(window, "Incorrect count input type. Must be integer.")
             return False
 
         if not (self.count_constraint[0] <= curr_count <= self.count_constraint[1]):
@@ -40,9 +40,10 @@ class DefaultRWidget(DefaultWidget):
 
         return True
 
-    def generate_message(self, message_id, function_code):
+    def generate_message(self, message_id, function_code, unit_address):
 
         return {'message_id': message_id,
+                'unit_address': unit_address,
                 'function_code': function_code,
                 'address': int(self.address.text()),
                 'count': int(self.count.text())}
