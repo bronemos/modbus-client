@@ -1,4 +1,4 @@
-from modbus_client.gui.widgets.connect_widget import ConnectWidget
+from modbus_client.gui.widgets.home_widget import HomeWidget
 from modbus_client.gui.widgets.read_widgets.read_coils_widget import ReadCoilsWidget
 from modbus_client.gui.widgets.read_widgets.read_discrete_inputs_widget import ReadDiscreteInputsWidget
 from modbus_client.gui.widgets.read_widgets.read_holding_registers_widget import ReadHoldingRegistersWidget
@@ -8,3 +8,4 @@ from modbus_client.gui.widgets.write_widgets.write_multiple_coils_widget import 
 from modbus_client.gui.widgets.write_widgets.write_multiple_registers_widget import WriteMultipleRegistersWidget
 from modbus_client.gui.widgets.write_widgets.write_single_coil_widget import WriteSingleCoilWidget
 from modbus_client.gui.widgets.write_widgets.write_single_register_widget import WriteSingleRegisterWidget
+from modbus_client.gui.widgets.log_widget import LogWidget

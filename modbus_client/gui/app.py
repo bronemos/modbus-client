@@ -31,8 +31,8 @@ class Application(QMainWindow):
 
         self.mainWidget = QWidget()
 
-        self.ConnectWidget = ConnectWidget()
-        self.ConnectWidget.button.clicked.connect(self._connect_disconnect)
+        self.ConnectWidget = HomeWidget()
+        self.ConnectWidget.connect_button.clicked.connect(self._connect_disconnect)
 
         self.ReadCoilsWidget = ReadCoilsWidget()
         self.ReadDiscreteInputsWidget = ReadDiscreteInputsWidget()
@@ -70,21 +70,38 @@ class Application(QMainWindow):
         form.addRow(self.sendButton)
 
         self.reqWidget = QGroupBox("REQUEST")
-        self.reqWidget.setAlignment(Qt.AlignCenter)
         self.reqWidget.setEnabled(self.connected)
+        self.reqWidget.setAlignment(Qt.AlignCenter)
 
         self.reqWidget.setLayout(form)
 
-        layout.addWidget(self.reqWidget)
-
-        res_label = QLabel("RESPONSE")
+        self.resWidget = QGroupBox("RESPONSE")
+        self.resWidget.setEnabled(self.connected)
         self.res_message = QLabel()
         self.res_message.setAlignment(Qt.AlignCenter)
-        res_label.setAlignment(Qt.AlignCenter)
+        reslayout = QVBoxLayout()
+        reslayout.addWidget(self.res_message)
+        self.resWidget.setAlignment(Qt.AlignCenter)
+        self.resWidget.setLayout(reslayout)
 
-        layout.addWidget(res_label)
-        layout.addWidget(QHLine())
-        layout.addWidget(self.res_message)
+        self.requestLogWidget = LogWidget("REQUEST LOG")
+
+        self.responseLogWidget = LogWidget("RESPONSE LOG")
+
+        self.reqresWidget = QWidget()
+        reqresLayout = QGridLayout()
+        reqresLayout.setRowStretch(0, 1)
+        reqresLayout.setRowStretch(1, 1)
+        reqresLayout.setColumnStretch(0, 1)
+        reqresLayout.setColumnStretch(1, 1)
+        reqresLayout.addWidget(self.reqWidget, 0, 0, 1, 1)
+        reqresLayout.addWidget(self.resWidget, 0, 1, 1, -1)
+        reqresLayout.addWidget(self.requestLogWidget, 1, 0, -1, 1)
+        reqresLayout.addWidget(self.responseLogWidget, 1, 1, -1, -1)
+        self.reqresWidget.setLayout(reqresLayout)
+        # layout.addWidget(self.reqWidget)
+
+        layout.addWidget(self.reqresWidget)
 
         self.mainWidget.setLayout(layout)
         self.setCentralWidget(self.mainWidget)
@@ -92,8 +109,8 @@ class Application(QMainWindow):
     def _connect_disconnect(self):
         if not self.connected:
             self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connecting_movie)
-            self.ConnectWidget.button.setText("Connecting...")
-            self.ConnectWidget.button.setEnabled(False)
+            self.ConnectWidget.connect_button.setText("Connecting...")
+            self.ConnectWidget.connect_button.setEnabled(False)
             serializer_thread = Thread(target=serializer.start)
             check_connection_thread = Thread(
                 target=lambda: asyncio.new_event_loop().run_until_complete(self._check_connection()))
@@ -103,7 +120,8 @@ class Application(QMainWindow):
             serializer.req_queue.put("DC")
             self.connected = False
             self.reqWidget.setEnabled(self.connected)
-            self.ConnectWidget.button.setText("Connect")
+            self.resWidget.setEnabled(self.connected)
+            self.ConnectWidget.connect_button.setText("Connect")
             self.ConnectWidget.indicator.setMovie(self.ConnectWidget.disconnected_movie)
 
     async def _check_connection(self):
@@ -111,10 +129,18 @@ class Application(QMainWindow):
 
         if ack == "ACK":
             self.connected = True
-            self.ConnectWidget.button.setEnabled(True)
+            self.ConnectWidget.connect_button.setEnabled(True)
             self.reqWidget.setEnabled(self.connected)
-            self.ConnectWidget.button.setText("Disconnect")
+            self.resWidget.setEnabled(self.connected)
+            self.ConnectWidget.connect_button.setText("Disconnect")
             self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connected_movie)
+
+        else:
+            self.ConnectWidget.connect_button.setEnabled(True)
+            self.reqWidget.setEnabled(self.connected)
+            self.resWidget.setEnabled(self.connected)
+            self.ConnectWidget.connect_button.setText("Connect")
+            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.disconnected_movie)
 
     def _change_widget(self):
         current = self.dropdown.currentIndex()
@@ -156,7 +182,7 @@ class Application(QMainWindow):
 
     def _get_message(self):
         try:
-            message = serializer.res_queue.get()
+            message = serializer.res_queue.get(timeout=10)
             return message
         except queue.Empty:
             return
@@ -165,10 +191,11 @@ class Application(QMainWindow):
 def run_gui():
     app = QApplication()
     app.setApplicationDisplayName('Modbus Client GUI')
-    app.setStyle('Fusion')
+    app.setStyle('fusion')
     mainWindow = Application()
     p = mainWindow.palette()
     p.setColor(mainWindow.backgroundRole(), Qt.white)
     mainWindow.setPalette(p)
+    mainWindow.setMinimumSize(700, 700)
     mainWindow.show()
     sys.exit(app.exec_())

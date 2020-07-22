@@ -10,7 +10,6 @@ class DefaultWidget(QWidget):
     def __init__(self, parent=None):
         super(DefaultWidget, self).__init__(parent, QtCore.Qt.Window)
         self.layout = QFormLayout()
-        self.setLayout(self.layout)
 
     def clear_line(self, input_line):
         if input_line.text() == input_line.default_value:

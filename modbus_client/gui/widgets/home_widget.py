@@ -3,11 +3,12 @@ from PySide2 import QtCore
 from modbus_client.gui.style.custom_elements import *
 
 
-class ConnectWidget(QWidget):
+class HomeWidget(QWidget):
 
     def __init__(self, parent=None):
-        super(ConnectWidget, self).__init__(parent, QtCore.Qt.Window)
-        self.button = QPushButton("Connect")
+        super(HomeWidget, self).__init__(parent, QtCore.Qt.Window)
+        self.connect_button = QPushButton("Connect")
+        self.historian_button = QPushButton("Historian")
         self.disconnected_movie = QtGui.QMovie("../resources/disconnected.gif")
         self.connecting_movie = QtGui.QMovie("../resources/connecting.gif")
         self.connected_movie = QtGui.QMovie("../resources/connected.gif")
@@ -15,13 +16,22 @@ class ConnectWidget(QWidget):
         self.connecting_movie.setScaledSize(QSize(50, 50))
         self.connected_movie.setScaledSize(QSize(50, 50))
         self.indicator = QLabel()
+        self.indicator.setAlignment(Qt.AlignCenter)
         self.indicator.setMovie(self.disconnected_movie)
         self.disconnected_movie.start()
         self.connected_movie.start()
         self.connecting_movie.start()
 
-        layout = QHBoxLayout()
+        connect_layout = QVBoxLayout()
+        connect_layout.setAlignment(Qt.AlignCenter)
+        connect_layout.addWidget(self.connect_button)
+        connect_layout.addWidget(self.indicator)
+
+        connect_widget = QWidget()
+        connect_widget.setLayout(connect_layout)
+
+        layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.button)
-        layout.addWidget(self.indicator)
+        #layout.addWidget(QPushButton("HISTORIAN"))
+        layout.addWidget(connect_widget)
         self.setLayout(layout)

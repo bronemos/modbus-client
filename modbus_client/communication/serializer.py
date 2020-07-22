@@ -52,6 +52,7 @@ async def serialize():
 
             else:
                 print(message)
+                print("abcd")
             return message
 
         while True:
@@ -62,6 +63,7 @@ async def serialize():
         while True:
             user_message = await asyncio.get_event_loop().run_in_executor(executor, ext_get_user_message)
             if user_message == 'DC':
+                await ws.close()
                 return
             try:
                 await ws.send_bytes(bytes.fromhex(user_message))
