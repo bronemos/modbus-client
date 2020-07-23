@@ -84,9 +84,9 @@ class Application(QMainWindow):
         self.resWidget.setAlignment(Qt.AlignCenter)
         self.resWidget.setLayout(reslayout)
 
-        self.requestLogWidget = LogWidget("REQUEST LOG")
+        self.requestLogWidget = RequestLogWidget()
 
-        self.responseLogWidget = LogWidget("RESPONSE LOG")
+        self.responseLogWidget = ResponseLogWidget()
 
         self.reqresWidget = QWidget()
         reqresLayout = QGridLayout()
@@ -158,6 +158,7 @@ class Application(QMainWindow):
             return
 
         message = self.stackedMainWidget.currentWidget().generate_message(self.message_id, unit_address)
+        self.requestLogWidget.update_log(message)
 
         print(message)
         self.message_id += 1
@@ -167,6 +168,7 @@ class Application(QMainWindow):
     async def show_response(self):
         message = await asyncio.get_event_loop().run_in_executor(self.executor, self._get_message)
         print(message)
+        self.responseLogWidget.update_log(message)
         current_selection = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
         if current_selection == 1:
             self.res_message.setText(f"Coils set are: {','.join(message['set_list'])}" if len(message['set_list'])
@@ -196,6 +198,6 @@ def run_gui():
     p = mainWindow.palette()
     p.setColor(mainWindow.backgroundRole(), Qt.white)
     mainWindow.setPalette(p)
-    mainWindow.setMinimumSize(700, 700)
+    mainWindow.setMinimumSize(1400, 800)
     mainWindow.show()
     sys.exit(app.exec_())

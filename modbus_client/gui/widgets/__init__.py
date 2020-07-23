@@ -8,4 +8,5 @@ from modbus_client.gui.widgets.write_widgets.write_multiple_coils_widget import 
 from modbus_client.gui.widgets.write_widgets.write_multiple_registers_widget import WriteMultipleRegistersWidget
 from modbus_client.gui.widgets.write_widgets.write_single_coil_widget import WriteSingleCoilWidget
 from modbus_client.gui.widgets.write_widgets.write_single_register_widget import WriteSingleRegisterWidget
-from modbus_client.gui.widgets.log_widget import LogWidget
+from modbus_client.gui.widgets.log_widgets.response_log_widget import ResponseLogWidget
+from modbus_client.gui.widgets.log_widgets.request_log_widget import RequestLogWidget

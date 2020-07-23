@@ -75,3 +75,11 @@ class ErrorDialog(QDialog):
         self.layout.addWidget(self.button)
         self.setLayout(self.layout)
         self.exec_()
+
+
+class CenterDelegate(QStyledItemDelegate):
+
+    def createEditor(self, parent, option, index):
+        editor = QStyledItemDelegate.createEditor(self, parent, option, index)
+        editor.setAlignment(Qt.AlignCenter)
+        return editor

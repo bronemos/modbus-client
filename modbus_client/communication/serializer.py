@@ -40,19 +40,20 @@ async def serialize():
                         if status == '1':
                             set_list.append(str(no + response_first_address))
                     print(f'coil status: {statuses}, {len(statuses)}')
-                    return {'set_list': set_list}
+                    return {'function_code': function_code,
+                            'set_list': set_list}
                 elif function_code == 3 or function_code == 4:
                     data_list = list()
                     data_list.extend(
                         [str(int(''.join(message_hex[i:i + 4]), 16)) for i in range(0, len(message_hex), 4)])
                     print(data_list)
-                    return {'register_data': data_list}
+                    return {'function_code': function_code,
+                            'register_data': data_list}
                 elif function_code:
                     pass
 
             else:
                 print(message)
-                print("abcd")
             return message
 
         while True:
