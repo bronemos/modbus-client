@@ -185,7 +185,7 @@ class Application(QMainWindow):
 
     def _get_message(self):
         try:
-            message = serializer.res_queue.get(timeout=10)
+            message = serializer.res_queue.get(block=True, timeout=10)
             return message
         except queue.Empty:
             return
