@@ -26,6 +26,8 @@ async def serialize():
 
         def deserialize_message(message):
             if type(message) == bytes:
+                message_id = int(message[0:2].hex(), 16)
+                unit_address = message[6]
                 function_code = message[7]
                 print(f"function code:{function_code}")
                 message_hex = message[9:].hex()
@@ -40,14 +42,18 @@ async def serialize():
                         if status == '1':
                             set_list.append(str(no + response_first_address))
                     print(f'coil status: {statuses}, {len(statuses)}')
-                    return {'function_code': function_code,
+                    return {'message_id': message_id,
+                            'unit_address': unit_address,
+                            'function_code': function_code,
                             'set_list': set_list}
                 elif function_code == 3 or function_code == 4:
                     data_list = list()
                     data_list.extend(
                         [str(int(''.join(message_hex[i:i + 4]), 16)) for i in range(0, len(message_hex), 4)])
                     print(data_list)
-                    return {'function_code': function_code,
+                    return {'message_id': message_id,
+                            'unit_address': unit_address,
+                            'function_code': function_code,
                             'register_data': data_list}
                 elif function_code:
                     pass

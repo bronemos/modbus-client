@@ -77,9 +77,8 @@ class ErrorDialog(QDialog):
         self.exec_()
 
 
-class CenterDelegate(QStyledItemDelegate):
+class CenterDelegate(QItemDelegate):
 
-    def createEditor(self, parent, option, index):
-        editor = QStyledItemDelegate.createEditor(self, parent, option, index)
-        editor.setAlignment(Qt.AlignCenter)
-        return editor
+    def paint(self, painter, option, index):
+        option.displayAlignment = Qt.AlignCenter
+        QItemDelegate.paint(self, painter, option, index)

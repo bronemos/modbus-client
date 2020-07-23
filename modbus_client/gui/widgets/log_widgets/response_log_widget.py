@@ -11,6 +11,7 @@ class ResponseLogWidget(QGroupBox):
         self.setAlignment(Qt.AlignCenter)
 
         self.table = QTableWidget()
+        self.table.verticalHeader().hide()
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setItemDelegate(CenterDelegate())
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
