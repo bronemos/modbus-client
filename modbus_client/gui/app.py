@@ -8,6 +8,7 @@ from modbus_client.codes import Codes
 from modbus_client.communication import serializer
 from modbus_client.gui.style.custom_elements import *
 from modbus_client.gui.widgets import *
+from modbus_client.state_manager.state_manager import StateManager
 
 protocol_code = '0000'
 
@@ -111,10 +112,10 @@ class Application(QMainWindow):
             self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connecting_movie)
             self.ConnectWidget.connect_button.setText("Connecting...")
             self.ConnectWidget.connect_button.setEnabled(False)
-            serializer_thread = Thread(target=serializer.start)
+            state_manager_thread = Thread(target=lambda: StateManager())
             check_connection_thread = Thread(
                 target=lambda: asyncio.new_event_loop().run_until_complete(self._check_connection()))
-            serializer_thread.start()
+            state_manager_thread.start()
             check_connection_thread.start()
         else:
             serializer.req_queue.put("DC")
