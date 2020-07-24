@@ -1,14 +1,9 @@
-import asyncio
-import queue
 import sys
 from concurrent.futures import ThreadPoolExecutor
-from threading import Thread
 
 from modbus_client.codes import Codes
-from modbus_client.communication import serializer
 from modbus_client.gui.style.custom_elements import *
 from modbus_client.gui.widgets import *
-from modbus_client.state_manager.state_manager import StateManager
 
 protocol_code = '0000'
 
@@ -18,8 +13,11 @@ class Application(QMainWindow):
     connected = False
     message_id = 0
 
-    def __init__(self, parent=None):
+    def __init__(self, state_manager, parent=None):
         QMainWindow.__init__(self, parent)
+
+        self.state_manager = state_manager
+        self.state_manager.update.connect(self.update_gui)
 
         self.stackedMainWidget = QStackedWidget()
 
@@ -112,32 +110,10 @@ class Application(QMainWindow):
             self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connecting_movie)
             self.ConnectWidget.connect_button.setText("Connecting...")
             self.ConnectWidget.connect_button.setEnabled(False)
-            state_manager_thread = Thread(target=lambda: StateManager())
-            check_connection_thread = Thread(
-                target=lambda: asyncio.new_event_loop().run_until_complete(self._check_connection()))
-            state_manager_thread.start()
-            check_connection_thread.start()
         else:
-            serializer.req_queue.put("DC")
+            self.state_manager.req_queue.put("DC")
+
             self.connected = False
-            self.reqWidget.setEnabled(self.connected)
-            self.resWidget.setEnabled(self.connected)
-            self.ConnectWidget.connect_button.setText("Connect")
-            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.disconnected_movie)
-
-    async def _check_connection(self):
-        ack = await asyncio.get_event_loop().run_in_executor(self.executor, self._get_message)
-
-        if ack == "ACK":
-            self.connected = True
-            self.ConnectWidget.connect_button.setEnabled(True)
-            self.reqWidget.setEnabled(self.connected)
-            self.resWidget.setEnabled(self.connected)
-            self.ConnectWidget.connect_button.setText("Disconnect")
-            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connected_movie)
-
-        else:
-            self.ConnectWidget.connect_button.setEnabled(True)
             self.reqWidget.setEnabled(self.connected)
             self.resWidget.setEnabled(self.connected)
             self.ConnectWidget.connect_button.setText("Connect")
@@ -163,12 +139,25 @@ class Application(QMainWindow):
 
         print(message)
         self.message_id += 1
-        serializer.req_queue.put(message)
-        asyncio.new_event_loop().run_until_complete(self.show_response())
+        self.state_manager.req_queue.put(message)
+        # asyncio.new_event_loop().run_until_complete(self.show_response())
 
-    async def show_response(self):
-        message = await asyncio.get_event_loop().run_in_executor(self.executor, self._get_message)
+    def update_gui(self, message):
         print(message)
+        if message == 'ACK':
+            self.connected = True
+            self.ConnectWidget.connect_button.setEnabled(True)
+            self.reqWidget.setEnabled(self.connected)
+            self.resWidget.setEnabled(self.connected)
+            self.ConnectWidget.connect_button.setText("Disconnect")
+            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connected_movie)
+
+        else:
+            self.ConnectWidget.connect_button.setEnabled(True)
+            self.reqWidget.setEnabled(self.connected)
+            self.resWidget.setEnabled(self.connected)
+            self.ConnectWidget.connect_button.setText("Connect")
+            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.disconnected_movie)
         self.responseLogWidget.update_log(message)
         current_selection = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
         if current_selection == 1:
@@ -183,19 +172,12 @@ class Application(QMainWindow):
         elif current_selection == 4:
             self.res_message.setText(f"Input registers data: {','.join(message['register_data'])}")
 
-    def _get_message(self):
-        try:
-            message = serializer.res_queue.get(block=True, timeout=10)
-            return message
-        except queue.Empty:
-            return
 
-
-def run_gui():
+def run_gui(state_manager):
     app = QApplication()
     app.setApplicationDisplayName('Modbus Client GUI')
     app.setStyle('fusion')
-    mainWindow = Application()
+    mainWindow = Application(state_manager)
     p = mainWindow.palette()
     p.setColor(mainWindow.backgroundRole(), Qt.white)
     mainWindow.setPalette(p)
