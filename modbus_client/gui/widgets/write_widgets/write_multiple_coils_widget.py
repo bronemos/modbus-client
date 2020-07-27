@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import QPushButton
 
-from modbus_client.gui.widgets.write_widgets.default_write_widget import DefaultWWidget
 from modbus_client.gui.style.custom_elements import ErrorDialog
+from modbus_client.gui.widgets.write_widgets.default_write_widget import DefaultWWidget
 
 
 class WriteMultipleCoilsWidget(DefaultWWidget):

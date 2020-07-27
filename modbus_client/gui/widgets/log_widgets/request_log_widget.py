@@ -1,6 +1,8 @@
+from datetime import datetime
+
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import *
-from datetime import datetime
+
 from modbus_client.gui.style.custom_elements import CenterDelegate
 
 
