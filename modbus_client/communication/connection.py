@@ -16,6 +16,7 @@ class Connection:
     async def connect(self):
         self.ws = await aiohttp.ClientSession().ws_connect(
             'ws://' + ':'.join([conf['host'], conf['port']]) + '/ws')
+        return (await self.ws.receive()).data
 
     async def ws_writer(self, message: dict):
         transaction_id = message['message_id']
@@ -26,5 +27,6 @@ class Connection:
 
     async def ws_reader(self):
         while True:
-            message = serializer.deserialize_message(await self.ws.receive())
-            self._pending_responses[message['message_id']].set_result(message)
+            message = serializer.deserialize_message((await self.ws.receive()).data)
+            if type(message) != str:
+                self._pending_responses[message['message_id']].set_result(message)

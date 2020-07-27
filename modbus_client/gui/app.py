@@ -106,18 +106,7 @@ class Application(QMainWindow):
         self.setCentralWidget(self.mainWidget)
 
     def _connect_disconnect(self):
-        if not self.connected:
-            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connecting_movie)
-            self.ConnectWidget.connect_button.setText("Connecting...")
-            self.ConnectWidget.connect_button.setEnabled(False)
-        else:
-            self.state_manager.req_queue.put("DC")
-
-            self.connected = False
-            self.reqWidget.setEnabled(self.connected)
-            self.resWidget.setEnabled(self.connected)
-            self.ConnectWidget.connect_button.setText("Connect")
-            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.disconnected_movie)
+        self.state_manager.run_loop()
 
     def _change_widget(self):
         current = self.dropdown.currentIndex()
@@ -151,6 +140,7 @@ class Application(QMainWindow):
             self.resWidget.setEnabled(self.connected)
             self.ConnectWidget.connect_button.setText("Disconnect")
             self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connected_movie)
+            return
 
         else:
             self.ConnectWidget.connect_button.setEnabled(True)
