@@ -1,8 +1,8 @@
 import sys
 
-from modbus_client.codes import Codes
 from modbus_client.gui.style.custom_elements import *
 from modbus_client.gui.widgets import *
+from modbus_client.resources.codes import Codes
 
 protocol_code = '0000'
 

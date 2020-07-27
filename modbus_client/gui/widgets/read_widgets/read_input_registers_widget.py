@@ -1,5 +1,5 @@
-from modbus_client.codes import Codes
 from modbus_client.gui.widgets.read_widgets.default_read_widget import DefaultRWidget
+from modbus_client.resources.codes import Codes
 
 
 class ReadInputRegistersWidget(DefaultRWidget):

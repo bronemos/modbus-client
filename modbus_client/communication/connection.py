@@ -27,10 +27,7 @@ class Connection:
         return await pending_response
 
     async def ws_reader(self):
-        print("reader started")
         while True:
             message = serializer.deserialize_message((await self.ws.receive()).data)
-            print("before")
             if type(message) != str:
-                print("after")
                 self._pending_responses[message['message_id']].set_result(message)
