@@ -14,7 +14,8 @@ class Connection:
     _pending_responses = dict()
 
     async def connect(self):
-        self.ws = await aiohttp.ClientSession().ws_connect(
+        self.session = aiohttp.ClientSession()
+        self.ws = await self.session.ws_connect(
             'ws://' + ':'.join([conf['host'], conf['port']]) + '/ws')
         return (await self.ws.receive()).data
 
@@ -26,7 +27,10 @@ class Connection:
         return await pending_response
 
     async def ws_reader(self):
+        print("reader started")
         while True:
             message = serializer.deserialize_message((await self.ws.receive()).data)
+            print("before")
             if type(message) != str:
+                print("after")
                 self._pending_responses[message['message_id']].set_result(message)

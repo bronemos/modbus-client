@@ -107,6 +107,7 @@ class Application(QMainWindow):
         if not self.connected:
             self.state_manager.run_loop()
         else:
+            self.state_manager.req_queue.put('DC')
             self.update_gui('DC')
 
     def _change_widget(self):

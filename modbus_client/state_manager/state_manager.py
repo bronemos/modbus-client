@@ -27,14 +27,18 @@ class StateManager(QObject):
         writer_future = asyncio.ensure_future(self.write_loop())
         reader_future = asyncio.ensure_future(self.connection.ws_reader())
         await asyncio.wait([writer_future, reader_future], return_when=asyncio.FIRST_COMPLETED)
+        writer_future.cancel()
+        reader_future.cancel()
 
     async def write_loop(self):
         while True:
             try:
-                print("abcd")
                 message = self.req_queue.get()
+                if message == 'DC':
+                    await self.connection.session.close()
+                    return
+                print(message)
                 response = await self.connection.ws_writer(message)
                 self.update.emit(response)
-                print(response)
             except queue.Empty:
                 pass
