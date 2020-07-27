@@ -105,6 +105,11 @@ class Application(QMainWindow):
 
     def _connect_disconnect(self):
         if not self.connected:
+            self.ConnectWidget.connect_button.setEnabled(self.connected)
+            self.reqWidget.setEnabled(self.connected)
+            self.resWidget.setEnabled(self.connected)
+            self.ConnectWidget.connect_button.setText("Connecting...")
+            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connecting_movie)
             self.state_manager.run_loop()
         else:
             self.state_manager.req_queue.put('DC')
@@ -142,7 +147,7 @@ class Application(QMainWindow):
             self.ConnectWidget.connect_button.setText("Disconnect")
             self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connected_movie)
             return
-        elif message == 'DC':
+        elif message == 'DC' or message == 1000:
             self.connected = False
             self.ConnectWidget.connect_button.setEnabled(True)
             self.reqWidget.setEnabled(self.connected)
