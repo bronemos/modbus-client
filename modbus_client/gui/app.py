@@ -1,5 +1,4 @@
 import sys
-from concurrent.futures import ThreadPoolExecutor
 
 from modbus_client.codes import Codes
 from modbus_client.gui.style.custom_elements import *
@@ -9,7 +8,6 @@ protocol_code = '0000'
 
 
 class Application(QMainWindow):
-    executor = ThreadPoolExecutor(max_workers=1)
     connected = False
     message_id = 0
 
@@ -106,7 +104,10 @@ class Application(QMainWindow):
         self.setCentralWidget(self.mainWidget)
 
     def _connect_disconnect(self):
-        self.state_manager.run_loop()
+        if not self.connected:
+            self.state_manager.run_loop()
+        else:
+            self.update_gui('DC')
 
     def _change_widget(self):
         current = self.dropdown.currentIndex()
@@ -117,7 +118,7 @@ class Application(QMainWindow):
         try:
             unit_address = int(self.unitAddress.text())
         except ValueError:
-            ErrorDialog(self, "Incorrect unit address value.")
+            ErrorDialog(self, 'Incorrect unit address value.')
             return
 
         if not self.stackedMainWidget.currentWidget().validate_input(self):
@@ -129,7 +130,6 @@ class Application(QMainWindow):
         print(message)
         self.message_id += 1
         self.state_manager.req_queue.put(message)
-        # asyncio.new_event_loop().run_until_complete(self.show_response())
 
     def update_gui(self, message):
         print(message)
@@ -141,13 +141,14 @@ class Application(QMainWindow):
             self.ConnectWidget.connect_button.setText("Disconnect")
             self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connected_movie)
             return
-
-        else:
+        elif message == 'DC':
+            self.connected = False
             self.ConnectWidget.connect_button.setEnabled(True)
             self.reqWidget.setEnabled(self.connected)
             self.resWidget.setEnabled(self.connected)
             self.ConnectWidget.connect_button.setText("Connect")
             self.ConnectWidget.indicator.setMovie(self.ConnectWidget.disconnected_movie)
+            return
         self.responseLogWidget.update_log(message)
         current_selection = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
         if current_selection == 1:
