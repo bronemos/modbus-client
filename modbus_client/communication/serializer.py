@@ -10,6 +10,7 @@ def deserialize_message(message):
         function_code = message[7]
         print(f"function code:{function_code}")
         message_hex = message[9:].hex()
+        raw_data = message[8:]
         print("msg hex: ", message_hex)
         if function_code == 1 or function_code == 2:
             set_list = list()
@@ -24,7 +25,8 @@ def deserialize_message(message):
             return {'message_id': message_id,
                     'unit_address': unit_address,
                     'function_code': function_code,
-                    'set_list': set_list}
+                    'set_list': set_list,
+                    'raw_data': raw_data}
         elif function_code == 3 or function_code == 4:
             data_list = list()
             data_list.extend(
@@ -33,7 +35,8 @@ def deserialize_message(message):
             return {'message_id': message_id,
                     'unit_address': unit_address,
                     'function_code': function_code,
-                    'register_data': data_list}
+                    'register_data': data_list,
+                    'raw_data': raw_data}
         elif function_code:
             pass
 

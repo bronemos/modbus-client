@@ -9,7 +9,7 @@ db.execute('''CREATE TABLE request_history (
               transaction_id INT,
               unit_address INT,
               function_code INT,
-              data BINARY,
+              message_data BINARY,
               PRIMARY KEY (transaction_id));''')
 
 db.execute('''CREATE TABLE response_history (
@@ -17,5 +17,9 @@ db.execute('''CREATE TABLE response_history (
               transaction_id INT,
               unit_address INT,
               function_code INT,
-              data BINARY,
+              message_data BINARY,
               PRIMARY KEY (transaction_id));''')
+
+conn.commit()
+
+conn.close()

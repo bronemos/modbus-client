@@ -1,5 +1,7 @@
 import asyncio
 import queue
+import sqlite3
+from datetime import datetime
 from queue import Queue
 from threading import Thread
 
@@ -23,6 +25,8 @@ class StateManager(QObject):
     async def _state_manager_loop(self):
         self.connection = Connection()
         connection_response = await self.connection.connect()
+        # self.db_conn = sqlite3.connect('../db/historian.db')
+        # self.db = self.db_conn.cursor()
         self.update.emit(connection_response)
         writer_future = asyncio.ensure_future(self.write_loop())
         reader_future = asyncio.ensure_future(self.connection.ws_reader())
@@ -39,6 +43,16 @@ class StateManager(QObject):
                     return
                 print(message)
                 response = await self.connection.ws_writer(message)
+                print(type(response['raw_data']))
+                # try:
+                #     self.db.execute('''INSERT INTO response_history (transaction_timestamp, transaction_id, unit_address,
+                #                     function_code, message_data)
+                #                     VALUES (?, ?, ?, ?, ?);''',
+                #                     (datetime.now(), response['message_id'], response['unit_address'],
+                #                      response['function_code'], response['raw_data']))
+                #     self.db_conn.commit()
+                # except Exception as e:
+                #     print(e)
                 self.update.emit(response)
             except queue.Empty:
                 pass
