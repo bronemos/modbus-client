@@ -4,8 +4,6 @@ from modbus_client.gui.style.custom_elements import *
 from modbus_client.gui.widgets import *
 from modbus_client.resources.codes import Codes
 
-protocol_code = '0000'
-
 
 class Application(QMainWindow):
     connected = False
@@ -17,19 +15,20 @@ class Application(QMainWindow):
         self.state_manager = state_manager
         self.state_manager.update.connect(self.update_gui)
 
-        self.stackedMainWidget = QStackedWidget()
+        self.stackedRequestWidget = QStackedWidget()
 
         self.groupBox = QGroupBox()
         self.groupBox.setAlignment(Qt.AlignCenter)
 
         layout = QVBoxLayout()
-        layout.addWidget(self.stackedMainWidget)
+        layout.addWidget(self.stackedRequestWidget)
         self.groupBox.setLayout(layout)
 
         self.mainWidget = QWidget()
 
-        self.ConnectWidget = HomeWidget()
-        self.ConnectWidget.connect_button.clicked.connect(self._connect_disconnect)
+        self.HomeWidget = HomeWidget()
+        self.HomeWidget.connect_button.clicked.connect(self._connect_disconnect)
+        self.HomeWidget.historian_button.clicked.connect(self._set_center_widget)
 
         self.ReadCoilsWidget = ReadCoilsWidget()
         self.ReadDiscreteInputsWidget = ReadDiscreteInputsWidget()
@@ -40,25 +39,25 @@ class Application(QMainWindow):
         self.WriteMultipleRegistersWidget = WriteMultipleRegistersWidget()
         self.WriteMultipleCoilsWidget = WriteMultipleCoilsWidget()
 
-        self.stackedMainWidget.addWidget(self.ReadCoilsWidget)
-        self.stackedMainWidget.addWidget(self.ReadDiscreteInputsWidget)
-        self.stackedMainWidget.addWidget(self.ReadHoldingRegistersWidget)
-        self.stackedMainWidget.addWidget(self.ReadInputRegistersWidget)
-        self.stackedMainWidget.addWidget(self.WriteSingleCoilWidget)
-        self.stackedMainWidget.addWidget(self.WriteSingleRegisterWidget)
-        self.stackedMainWidget.addWidget(self.WriteMultipleCoilsWidget)
-        self.stackedMainWidget.addWidget(self.WriteMultipleRegistersWidget)
+        self.stackedRequestWidget.addWidget(self.ReadCoilsWidget)
+        self.stackedRequestWidget.addWidget(self.ReadDiscreteInputsWidget)
+        self.stackedRequestWidget.addWidget(self.ReadHoldingRegistersWidget)
+        self.stackedRequestWidget.addWidget(self.ReadInputRegistersWidget)
+        self.stackedRequestWidget.addWidget(self.WriteSingleCoilWidget)
+        self.stackedRequestWidget.addWidget(self.WriteSingleRegisterWidget)
+        self.stackedRequestWidget.addWidget(self.WriteMultipleCoilsWidget)
+        self.stackedRequestWidget.addWidget(self.WriteMultipleRegistersWidget)
 
         layout = QVBoxLayout()
         form = QFormLayout()
         self.dropdown = QComboBox()
         self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
-        self.dropdown.activated[str].connect(self._change_widget)
+        self.dropdown.activated[str].connect(self._change_request_widget)
         self.unitAddress = ClickableLineEdit('1')
         self.unitAddress.setToolTip("Unit address.\nValue between 1 and 65535")
         form.addRow("Unit address: ", self.unitAddress)
         form.addRow("Function: ", self.dropdown)
-        layout.addWidget(self.ConnectWidget)
+        layout.addWidget(self.HomeWidget)
 
         form.addRow(self.groupBox)
 
@@ -85,7 +84,7 @@ class Application(QMainWindow):
 
         self.responseLogWidget = ResponseLogWidget()
 
-        self.reqresWidget = QWidget()
+        self.reqresWidget = QGroupBox()
         reqresLayout = QGridLayout()
         reqresLayout.setRowStretch(0, 1)
         reqresLayout.setRowStretch(1, 1)
@@ -96,29 +95,40 @@ class Application(QMainWindow):
         reqresLayout.addWidget(self.requestLogWidget, 1, 0, -1, 1)
         reqresLayout.addWidget(self.responseLogWidget, 1, 1, -1, -1)
         self.reqresWidget.setLayout(reqresLayout)
-        # layout.addWidget(self.reqWidget)
 
-        layout.addWidget(self.reqresWidget)
+        self.historianWidget = HistorianWidget()
+
+        self.centerWidget = QStackedWidget()
+        self.centerWidget.addWidget(self.reqresWidget)
+        self.centerWidget.addWidget(self.historianWidget)
+
+        layout.addWidget(self.centerWidget)
 
         self.mainWidget.setLayout(layout)
         self.setCentralWidget(self.mainWidget)
 
     def _connect_disconnect(self):
         if not self.connected:
-            self.ConnectWidget.connect_button.setEnabled(self.connected)
+            self.HomeWidget.connect_button.setEnabled(self.connected)
             self.reqWidget.setEnabled(self.connected)
             self.resWidget.setEnabled(self.connected)
-            self.ConnectWidget.connect_button.setText("Connecting...")
-            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connecting_movie)
+            self.HomeWidget.connect_button.setText("Connecting...")
+            self.HomeWidget.indicator.setMovie(self.HomeWidget.connecting_movie)
             self.state_manager.run_loop()
         else:
             self.state_manager.req_queue.put('DC')
             self.update_gui('DC')
 
-    def _change_widget(self):
+    def _change_request_widget(self):
         current = self.dropdown.currentIndex()
-        self.stackedMainWidget.setCurrentIndex(current)
+        self.stackedRequestWidget.setCurrentIndex(current)
         self.dropdown.setCurrentIndex(current)
+
+    def _set_center_widget(self):
+        if self.centerWidget.currentIndex() == 0:
+            self.centerWidget.setCurrentIndex(1)
+        else:
+            self.centerWidget.setCurrentIndex(0)
 
     def _validate_and_queue(self):
         try:
@@ -127,10 +137,10 @@ class Application(QMainWindow):
             ErrorDialog(self, 'Incorrect unit address value.')
             return
 
-        if not self.stackedMainWidget.currentWidget().validate_input(self):
+        if not self.stackedRequestWidget.currentWidget().validate_input(self):
             return
 
-        message = self.stackedMainWidget.currentWidget().generate_message(self.message_id, unit_address)
+        message = self.stackedRequestWidget.currentWidget().generate_message(self.message_id, unit_address)
         self.requestLogWidget.update_log(message)
 
         print(message)
@@ -138,22 +148,22 @@ class Application(QMainWindow):
         self.state_manager.req_queue.put(message)
 
     def update_gui(self, message):
-        print(message)
+        print("this is msg", message)
         if message == 'ACK':
             self.connected = True
-            self.ConnectWidget.connect_button.setEnabled(True)
+            self.HomeWidget.connect_button.setEnabled(True)
             self.reqWidget.setEnabled(self.connected)
             self.resWidget.setEnabled(self.connected)
-            self.ConnectWidget.connect_button.setText("Disconnect")
-            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.connected_movie)
+            self.HomeWidget.connect_button.setText("Disconnect")
+            self.HomeWidget.indicator.setMovie(self.HomeWidget.connected_movie)
             return
         elif message == 'DC' or message == 1000:
             self.connected = False
-            self.ConnectWidget.connect_button.setEnabled(True)
+            self.HomeWidget.connect_button.setEnabled(True)
             self.reqWidget.setEnabled(self.connected)
             self.resWidget.setEnabled(self.connected)
-            self.ConnectWidget.connect_button.setText("Connect")
-            self.ConnectWidget.indicator.setMovie(self.ConnectWidget.disconnected_movie)
+            self.HomeWidget.connect_button.setText("Connect")
+            self.HomeWidget.indicator.setMovie(self.HomeWidget.disconnected_movie)
             return
         self.responseLogWidget.update_log(message)
         current_selection = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value

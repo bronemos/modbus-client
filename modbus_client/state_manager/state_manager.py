@@ -45,8 +45,7 @@ class StateManager(QObject):
                 response = await self.connection.ws_writer(message)
                 print(type(response['raw_data']))
                 try:
-                    self.db.execute('''INSERT INTO response_history (transaction_timestamp, transaction_id, unit_address,
-                                    function_code, message_data)
+                    self.db.execute('''INSERT INTO response_history 
                                     VALUES (?, ?, ?, ?, ?);''',
                                     (datetime.now(), response['message_id'], response['unit_address'],
                                      response['function_code'], response['raw_data']))

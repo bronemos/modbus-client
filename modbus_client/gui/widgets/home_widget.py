@@ -8,7 +8,7 @@ class HomeWidget(QWidget):
     def __init__(self, parent=None):
         super(HomeWidget, self).__init__(parent, QtCore.Qt.Window)
         self.connect_button = QPushButton("Connect")
-        self.historian_button = QPushButton("Historian")
+        self.historian_button = QPushButton(" " * 6 + "Historian" + " " * 6)
         self.disconnected_movie = QtGui.QMovie("../modbus_client/resources/disconnected.gif")
         self.connecting_movie = QtGui.QMovie("../modbus_client/resources/connecting.gif")
         self.connected_movie = QtGui.QMovie("../modbus_client/resources/connected.gif")
@@ -24,6 +24,8 @@ class HomeWidget(QWidget):
 
         connect_layout = QVBoxLayout()
         connect_layout.setAlignment(Qt.AlignCenter)
+        connect_layout.addWidget(self.historian_button)
+        connect_layout.addWidget(QHLine())
         connect_layout.addWidget(self.connect_button)
         connect_layout.addWidget(self.indicator)
 
@@ -32,6 +34,6 @@ class HomeWidget(QWidget):
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
-        #layout.addWidget(QPushButton("HISTORIAN"))
+        # layout.addWidget(QPushButton("HISTORIAN"))
         layout.addWidget(connect_widget)
         self.setLayout(layout)

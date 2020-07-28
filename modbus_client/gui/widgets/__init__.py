@@ -1,4 +1,5 @@
 from modbus_client.gui.widgets.home_widget import HomeWidget
+from modbus_client.gui.widgets.historian_widget import HistorianWidget
 from modbus_client.gui.widgets.log_widgets.request_log_widget import RequestLogWidget
 from modbus_client.gui.widgets.log_widgets.response_log_widget import ResponseLogWidget
 from modbus_client.gui.widgets.read_widgets.read_coils_widget import ReadCoilsWidget
