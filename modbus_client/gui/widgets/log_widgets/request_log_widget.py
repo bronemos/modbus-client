@@ -9,7 +9,7 @@ from modbus_client.gui.style.custom_elements import CenterDelegate
 class RequestLogWidget(QGroupBox):
 
     def __init__(self):
-        super(RequestLogWidget, self).__init__("REQUEST LOG")
+        super(RequestLogWidget, self).__init__('REQUEST LOG')
         self.setAlignment(Qt.AlignCenter)
 
         self.table = QTableWidget()
@@ -17,7 +17,7 @@ class RequestLogWidget(QGroupBox):
         self.table.setItemDelegate(CenterDelegate())
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        header_labels = ["Timestamp", "Transaction ID", "Unit Address", "Function Code", "First Address", "Count"]
+        header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'First Address', 'Count']
         self.table.setColumnCount(len(header_labels))
         self.table.setHorizontalHeaderLabels(header_labels)
 
@@ -28,8 +28,8 @@ class RequestLogWidget(QGroupBox):
 
     def update_log(self, transaction: dict):
         self.table.insertRow(0)
-        self.table.setItem(0, 0, QTableWidgetItem(datetime.now().strftime("%H:%M:%S")))
-        self.table.setItem(0, 1, QTableWidgetItem(str(transaction.get('message_id', '-'))))
+        self.table.setItem(0, 0, QTableWidgetItem(datetime.now().strftime('%H:%M:%S')))
+        self.table.setItem(0, 1, QTableWidgetItem(str(transaction.get('transaction_id', '-'))))
         self.table.setItem(0, 2, QTableWidgetItem(str(transaction.get('unit_address', '-'))))
         self.table.setItem(0, 3, QTableWidgetItem(str(transaction.get('function_code', '-'))))
         self.table.setItem(0, 4, QTableWidgetItem(str(transaction.get('address', '-'))))

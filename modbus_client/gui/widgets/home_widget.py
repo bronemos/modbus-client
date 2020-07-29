@@ -7,11 +7,11 @@ class HomeWidget(QWidget):
 
     def __init__(self, parent=None):
         super(HomeWidget, self).__init__(parent, QtCore.Qt.Window)
-        self.connect_button = QPushButton("Connect")
-        self.historian_button = QPushButton(" " * 6 + "Historian" + " " * 6)
-        self.disconnected_movie = QtGui.QMovie("../modbus_client/resources/disconnected.gif")
-        self.connecting_movie = QtGui.QMovie("../modbus_client/resources/connecting.gif")
-        self.connected_movie = QtGui.QMovie("../modbus_client/resources/connected.gif")
+        self.connect_button = QPushButton('Connect')
+        self.historian_button = QPushButton(' ' * 6 + 'Historian' + ' ' * 6)
+        self.disconnected_movie = QtGui.QMovie('../modbus_client/resources/disconnected.gif')
+        self.connecting_movie = QtGui.QMovie('../modbus_client/resources/connecting.gif')
+        self.connected_movie = QtGui.QMovie('../modbus_client/resources/connected.gif')
         self.disconnected_movie.setScaledSize(QSize(50, 50))
         self.connecting_movie.setScaledSize(QSize(50, 50))
         self.connected_movie.setScaledSize(QSize(50, 50))
@@ -34,6 +34,6 @@ class HomeWidget(QWidget):
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
-        # layout.addWidget(QPushButton("HISTORIAN"))
+        # layout.addWidget(QPushButton('HISTORIAN'))
         layout.addWidget(connect_widget)
         self.setLayout(layout)

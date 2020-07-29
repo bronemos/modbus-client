@@ -12,11 +12,11 @@ class DefaultWWidget(DefaultWidget):
 
     def __init__(self):
         super(DefaultWWidget, self).__init__()
-        self.firstAddress = ClickableLineEdit("0")
+        self.firstAddress = ClickableLineEdit('0')
         self.firstAddress.focused.connect(lambda: self.clear_line(self.firstAddress))
 
     def import_csv(self):
-        file_name = QFileDialog.getOpenFileName(self, "Open data csv", "/home")
+        file_name = QFileDialog.getOpenFileName(self, 'Open data csv', '/home')
         with open(file_name[0]) as input_csv:
             self.data_list = list()
             reader = csv.reader(input_csv)

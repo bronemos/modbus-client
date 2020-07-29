@@ -38,7 +38,7 @@ class Switch(QPushButton):
         self.setMinimumHeight(22)
 
     def paintEvent(self, event):
-        label = "1" if self.isChecked() else "0"
+        label = '1' if self.isChecked() else '0'
         bg_color = QtGui.QColor(119, 188, 31) if self.isChecked() else QtGui.QColor(240, 0, 0)
 
         radius = 10
@@ -67,8 +67,8 @@ class ErrorDialog(QDialog):
 
     def __init__(self, parent, error_message):
         super(ErrorDialog, self).__init__(parent)
-        self.setWindowTitle("Input error!")
-        self.button = QPushButton("OK")
+        self.setWindowTitle('Input error!')
+        self.button = QPushButton('OK')
         self.button.clicked.connect(self.close)
         self.layout = QVBoxLayout()
         self.layout.addWidget(QLabel(error_message))

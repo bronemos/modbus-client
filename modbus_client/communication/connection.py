@@ -20,7 +20,7 @@ class Connection:
         return (await self.ws.receive()).data
 
     async def ws_writer(self, message: dict):
-        transaction_id = message['message_id']
+        transaction_id = message['transaction_id']
         pending_response = asyncio.Future()
         self._pending_responses[transaction_id] = pending_response
         await self.ws.send_bytes(bytes.fromhex(serializer.serialize_message(message)))
@@ -30,4 +30,4 @@ class Connection:
         while True:
             message = serializer.deserialize_message((await self.ws.receive()).data)
             if type(message) != str:
-                self._pending_responses[message['message_id']].set_result(message)
+                self._pending_responses[message['transaction_id']].set_result(message)

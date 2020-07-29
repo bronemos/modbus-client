@@ -47,10 +47,10 @@ class StateManager(QObject):
                 try:
                     self.db.execute('''INSERT INTO response_history 
                                     VALUES (?, ?, ?, ?, ?);''',
-                                    (datetime.now(), response['message_id'], response['unit_address'],
+                                    (datetime.now(), response['transaction_id'], response['unit_address'],
                                      response['function_code'], response['raw_data']))
                     self.db_conn.commit()
-                    print("inserted successfully")
+                    print('inserted successfully')
                 except Exception as e:
                     print(e)
                 self.update.emit(response)

@@ -7,7 +7,7 @@ from modbus_client.resources.codes import Codes
 
 class Application(QMainWindow):
     connected = False
-    message_id = 0
+    transaction_id = 0
 
     def __init__(self, state_manager, parent=None):
         QMainWindow.__init__(self, parent)
@@ -54,24 +54,24 @@ class Application(QMainWindow):
         self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
         self.dropdown.activated[str].connect(self._change_request_widget)
         self.unitAddress = ClickableLineEdit('1')
-        self.unitAddress.setToolTip("Unit address.\nValue between 1 and 65535")
-        form.addRow("Unit address: ", self.unitAddress)
-        form.addRow("Function: ", self.dropdown)
+        self.unitAddress.setToolTip('Unit address.\nValue between 1 and 65535')
+        form.addRow('Unit address: ', self.unitAddress)
+        form.addRow('Function: ', self.dropdown)
         layout.addWidget(self.HomeWidget)
 
         form.addRow(self.groupBox)
 
-        self.sendButton = QPushButton("SEND")
+        self.sendButton = QPushButton('SEND')
         self.sendButton.clicked.connect(self._validate_and_queue)
         form.addRow(self.sendButton)
 
-        self.reqWidget = QGroupBox("REQUEST")
+        self.reqWidget = QGroupBox('REQUEST')
         self.reqWidget.setEnabled(self.connected)
         self.reqWidget.setAlignment(Qt.AlignCenter)
 
         self.reqWidget.setLayout(form)
 
-        self.resWidget = QGroupBox("RESPONSE")
+        self.resWidget = QGroupBox('RESPONSE')
         self.resWidget.setEnabled(self.connected)
         self.res_message = QLabel()
         self.res_message.setAlignment(Qt.AlignCenter)
@@ -112,7 +112,7 @@ class Application(QMainWindow):
             self.HomeWidget.connect_button.setEnabled(self.connected)
             self.reqWidget.setEnabled(self.connected)
             self.resWidget.setEnabled(self.connected)
-            self.HomeWidget.connect_button.setText("Connecting...")
+            self.HomeWidget.connect_button.setText('Connecting...')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.connecting_movie)
             self.state_manager.run_loop()
         else:
@@ -140,21 +140,21 @@ class Application(QMainWindow):
         if not self.stackedRequestWidget.currentWidget().validate_input(self):
             return
 
-        message = self.stackedRequestWidget.currentWidget().generate_message(self.message_id, unit_address)
+        message = self.stackedRequestWidget.currentWidget().generate_message(self.transaction_id, unit_address)
         self.requestLogWidget.update_log(message)
 
         print(message)
-        self.message_id += 1
+        self.transaction_id += 1
         self.state_manager.req_queue.put(message)
 
     def update_gui(self, message):
-        print("this is msg", message)
+        print('this is msg', message)
         if message == 'ACK':
             self.connected = True
             self.HomeWidget.connect_button.setEnabled(True)
             self.reqWidget.setEnabled(self.connected)
             self.resWidget.setEnabled(self.connected)
-            self.HomeWidget.connect_button.setText("Disconnect")
+            self.HomeWidget.connect_button.setText('Disconnect')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.connected_movie)
             return
         elif message == 'DC' or message == 1000:
@@ -162,18 +162,18 @@ class Application(QMainWindow):
             self.HomeWidget.connect_button.setEnabled(True)
             self.reqWidget.setEnabled(self.connected)
             self.resWidget.setEnabled(self.connected)
-            self.HomeWidget.connect_button.setText("Connect")
+            self.HomeWidget.connect_button.setText('Connect')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.disconnected_movie)
             return
         self.responseLogWidget.update_log(message)
         current_selection = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
         if current_selection == 1:
             self.res_message.setText(f"Coils set are: {','.join(message['set_list'])}" if len(message['set_list'])
-                                     else "No coils are set")
+                                     else 'No coils are set')
         elif current_selection == 2:
             self.res_message.setText(
                 f"Discrete inputs status: {','.join(message['set_list'])}" if len(message['set_list'])
-                else "No discrete inputs are set.")
+                else 'No discrete inputs are set.')
         elif current_selection == 3:
             self.res_message.setText(f"Holding registers data: {','.join(message['register_data'])}")
         elif current_selection == 4:

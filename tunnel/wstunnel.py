@@ -19,7 +19,7 @@ class WSTunnel:
         ws = aiohttp.web.WebSocketResponse()
         await ws.prepare(request)
         try:
-            print(datetime.now().strftime("%H:%M:%S") + " Connection established")
+            print(datetime.now().strftime('%H:%M:%S') + ' Connection established')
             # conn_msg_str = await ws.receive_str()
             # conn_msg = json.loads(conn_msg_str)
             reader, writer = await asyncio.open_connection(
@@ -42,7 +42,7 @@ class WSTunnel:
             while True:
                 try:
                     msg = await ws.receive_bytes()
-                    # print(datetime.now().strftime("%H:%M:%S") + msg)
+                    # print(datetime.now().strftime('%H:%M:%S') + msg)
                 except Exception:
                     break
                 writer.write(msg)
