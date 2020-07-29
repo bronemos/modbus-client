@@ -23,8 +23,11 @@ class Connection:
         transaction_id = message['transaction_id']
         pending_response = asyncio.Future()
         self._pending_responses[transaction_id] = pending_response
-        await self.ws.send_bytes(bytes.fromhex(serializer.serialize_message(message)))
-        return await pending_response
+        serialized_message = serializer.serialize_message(message)
+        await self.ws.send_bytes(bytes.fromhex(serialized_message))
+        response_dict = await pending_response
+        response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
+        return response_dict
 
     async def ws_reader(self):
         while True:

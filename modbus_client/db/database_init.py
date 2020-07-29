@@ -9,7 +9,7 @@ conn.execute('''CREATE TABLE IF NOT EXISTS request_history (
               unit_address INT,
               function_code INT,
               message_data BINARY,
-              PRIMARY KEY (transaction_id));''')
+              PRIMARY KEY (transaction_timestamp));''')
 
 conn.commit()
 
@@ -19,7 +19,7 @@ conn.execute('''CREATE TABLE IF NOT EXISTS response_history (
               unit_address INT,
               function_code INT,
               message_data BINARY,
-              PRIMARY KEY (transaction_id));''')
+              PRIMARY KEY (transaction_timestamp));''')
 
 conn.commit()
 

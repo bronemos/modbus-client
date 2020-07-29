@@ -17,6 +17,8 @@ class StateManager(QObject):
     def __init__(self):
         super(StateManager, self).__init__()
         self.req_queue = Queue()
+        self.db_conn = sqlite3.connect('./db/historian.db', check_same_thread=False)
+        self.db = self.db_conn.cursor()
 
     def run_loop(self):
         loop_thread = Thread(target=lambda: asyncio.new_event_loop().run_until_complete(self._state_manager_loop()))
@@ -25,8 +27,6 @@ class StateManager(QObject):
     async def _state_manager_loop(self):
         self.connection = Connection()
         connection_response = await self.connection.connect()
-        self.db_conn = sqlite3.connect('./db/historian.db')
-        self.db = self.db_conn.cursor()
         self.update.emit(connection_response)
         writer_future = asyncio.ensure_future(self.write_loop())
         reader_future = asyncio.ensure_future(self.connection.ws_reader())
@@ -43,12 +43,18 @@ class StateManager(QObject):
                     return
                 print(message)
                 response = await self.connection.ws_writer(message)
-                print(type(response['raw_data']))
+                print(response['raw_data'])
+                print(response['raw_request'])
                 try:
                     self.db.execute('''INSERT INTO response_history 
                                     VALUES (?, ?, ?, ?, ?);''',
                                     (datetime.now(), response['transaction_id'], response['unit_address'],
                                      response['function_code'], response['raw_data']))
+                    self.db_conn.commit()
+                    self.db.execute('''INSERT INTO request_history
+                                    VALUES (?, ?, ?, ?, ?);''',
+                                    (datetime.now(), response['transaction_id'], response['unit_address'],
+                                     response['function_code'], response['raw_request']))
                     self.db_conn.commit()
                     print('inserted successfully')
                 except Exception as e:

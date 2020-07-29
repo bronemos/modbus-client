@@ -127,6 +127,7 @@ class Application(QMainWindow):
     def _set_center_widget(self):
         if self.centerWidget.currentIndex() == 0:
             self.centerWidget.setCurrentIndex(1)
+            self.historianWidget.load(self.state_manager.db)
         else:
             self.centerWidget.setCurrentIndex(0)
 

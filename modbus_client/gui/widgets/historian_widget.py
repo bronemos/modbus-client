@@ -5,6 +5,8 @@ from modbus_client.gui.style.custom_elements import CenterDelegate
 
 
 class HistorianWidget(QGroupBox):
+    existing_responses = set()
+    existing_requests = set()
 
     def __init__(self):
         super(HistorianWidget, self).__init__()
@@ -42,5 +44,29 @@ class HistorianWidget(QGroupBox):
         layout.addWidget(response_box)
         self.setLayout(layout)
 
-    def load(self):
-        pass
+    def load(self, cursor):
+        cursor.execute('''SELECT * FROM response_history''')
+        responses = cursor.fetchall()
+        for response in responses:
+            if response not in self.existing_responses:
+                self.response_history.insertRow(0)
+                self.response_history.setItem(0, 0, QTableWidgetItem(response[0]))
+                self.response_history.setItem(0, 1, QTableWidgetItem(str(response[1])))
+                self.response_history.setItem(0, 2, QTableWidgetItem(str(response[2])))
+                self.response_history.setItem(0, 3, QTableWidgetItem(str(response[3])))
+                self.response_history.setItem(0, 4, QTableWidgetItem(str(response[4])))
+
+        self.existing_responses = self.existing_responses | set(responses)
+
+        cursor.execute('''SELECT * FROM request_history''')
+        requests = cursor.fetchall()
+        for request in requests:
+            if request not in self.existing_requests:
+                self.request_history.insertRow(0)
+                self.request_history.setItem(0, 0, QTableWidgetItem(request[0]))
+                self.request_history.setItem(0, 1, QTableWidgetItem(str(request[1])))
+                self.request_history.setItem(0, 2, QTableWidgetItem(str(request[2])))
+                self.request_history.setItem(0, 3, QTableWidgetItem(str(request[3])))
+                self.request_history.setItem(0, 4, QTableWidgetItem(str(request[4])))
+
+        self.existing_requests = self.existing_requests | set(requests)

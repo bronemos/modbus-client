@@ -34,6 +34,5 @@ class HomeWidget(QWidget):
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
-        # layout.addWidget(QPushButton('HISTORIAN'))
         layout.addWidget(connect_widget)
         self.setLayout(layout)
