@@ -84,22 +84,28 @@ class Application(QMainWindow):
 
         self.responseLogWidget = ResponseLogWidget()
 
-        self.reqresWidget = QGroupBox()
+        self.mainScrollWidget = QScrollArea()
+        self.mainScrollWidget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.mainScrollWidget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.mainScrollWidget.setWidgetResizable(True)
+
+        self.reqresWidget = QWidget()
         reqresLayout = QGridLayout()
-        reqresLayout.setRowStretch(0, 1)
-        reqresLayout.setRowStretch(1, 1)
-        reqresLayout.setColumnStretch(0, 1)
-        reqresLayout.setColumnStretch(1, 1)
+        #reqresLayout.setRowStretch(0, 1)
+        #reqresLayout.setRowStretch(1, 1)
+        #reqresLayout.setColumnStretch(0, 1)
+        #reqresLayout.setColumnStretch(1, 1)
         reqresLayout.addWidget(self.reqWidget, 0, 0, 1, 1)
         reqresLayout.addWidget(self.resWidget, 0, 1, 1, -1)
         reqresLayout.addWidget(self.requestLogWidget, 1, 0, -1, 1)
         reqresLayout.addWidget(self.responseLogWidget, 1, 1, -1, -1)
         self.reqresWidget.setLayout(reqresLayout)
 
+        self.mainScrollWidget.setWidget(self.reqresWidget)
         self.historianWidget = HistorianWidget()
 
         self.centerWidget = QStackedWidget()
-        self.centerWidget.addWidget(self.reqresWidget)
+        self.centerWidget.addWidget(self.mainScrollWidget)
         self.centerWidget.addWidget(self.historianWidget)
 
         layout.addWidget(self.centerWidget)
@@ -189,6 +195,6 @@ def run_gui(state_manager):
     p = mainWindow.palette()
     p.setColor(mainWindow.backgroundRole(), Qt.white)
     mainWindow.setPalette(p)
-    mainWindow.setMinimumSize(1400, 800)
+    #mainWindow.setMinimumSize(1400, 800)
     mainWindow.show()
     sys.exit(app.exec_())
