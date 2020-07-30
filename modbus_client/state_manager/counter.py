@@ -16,3 +16,4 @@ class Counter(QThread):
                 cnt = 0
                 self.update_live_view.emit()
             self.update_counter.emit(cnt)
+        self.update_counter.emit(None)

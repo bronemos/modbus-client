@@ -17,6 +17,5 @@ class ReadDiscreteInputsWidget(DefaultRWidget):
         self.layout.addRow('Input count: ', self.count)
         self.setLayout(self.layout)
 
-    def generate_message(self, transaction_id, unit_address):
-        return super(ReadDiscreteInputsWidget, self).generate_message(transaction_id, Codes.READ_DISCRETE_INPUTS.value,
-                                                                      unit_address)
+    def generate_message(self, transaction_id):
+        return super(ReadDiscreteInputsWidget, self).generate_message(transaction_id, Codes.READ_DISCRETE_INPUTS.value)

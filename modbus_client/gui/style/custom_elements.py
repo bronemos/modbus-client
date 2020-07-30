@@ -13,7 +13,7 @@ class ClickableLineEdit(QLineEdit):
 
     def focusInEvent(self, arg__1: PySide2.QtGui.QFocusEvent):
         super(ClickableLineEdit, self).focusInEvent(arg__1)
-        self.focused.emit()
+        self.setText('')
 
 
 class QHLine(QFrame):

@@ -66,6 +66,7 @@ class LiveViewWidget(QGroupBox):
 
         self.progressBar = QProgressBar()
         self.progressBar.setMaximum(100)
+        self.progressBar.setTextVisible(False)
         self.counter = Counter()
         self.counter.update_counter.connect(self.progressBar.setValue)
         self.counter.update_live_view.connect(self.update_view)
@@ -79,7 +80,11 @@ class LiveViewWidget(QGroupBox):
         self.setLayout(layout)
 
     def update_view(self):
-        self.req_queue.put(self.ReadCoilsWidget.generate_message(0, 1))
-        self.req_queue.put(self.ReadDiscreteInputsWidget.generate_message(0, 1))
-        self.req_queue.put(self.ReadHoldingRegistersWidget.generate_message(0, 1))
-        self.req_queue.put(self.ReadInputRegistersWidget.generate_message(0, 1))
+        if self.ReadCoilsWidget.validate_input(self) and \
+                self.ReadDiscreteInputsWidget.validate_input(self) and \
+                self.ReadHoldingRegistersWidget.validate_input(self) and \
+                self.ReadInputRegistersWidget.validate_input(self):
+            self.req_queue.put(self.ReadCoilsWidget.generate_message(0))
+            self.req_queue.put(self.ReadDiscreteInputsWidget.generate_message(0))
+            self.req_queue.put(self.ReadHoldingRegistersWidget.generate_message(0))
+            self.req_queue.put(self.ReadInputRegistersWidget.generate_message(0))

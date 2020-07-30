@@ -1,7 +1,6 @@
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import *
 
-from modbus_client.gui.style.custom_elements import ClickableLineEdit
 from modbus_client.gui.widgets.read_widgets import *
 from modbus_client.gui.widgets.write_widgets import *
 from modbus_client.resources.codes import Codes
@@ -9,7 +8,7 @@ from modbus_client.resources.codes import Codes
 
 class RequestWidget(QGroupBox):
 
-    def __init__(self, mode='auto'):
+    def __init__(self):
         super(RequestWidget, self).__init__("REQUEST")
         self.stackedRequestWidget = QStackedWidget()
         self.setAlignment(Qt.AlignCenter)
@@ -35,9 +34,6 @@ class RequestWidget(QGroupBox):
         self.dropdown = QComboBox()
         self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
         self.dropdown.activated[str].connect(self._change_request_widget)
-        self.unitAddress = ClickableLineEdit('1')
-        self.unitAddress.setToolTip('Unit address.\nValue between 1 and 65535')
-        form.addRow('Unit address: ', self.unitAddress)
         form.addRow('Function: ', self.dropdown)
 
         self.groupBox = QGroupBox()
@@ -48,9 +44,8 @@ class RequestWidget(QGroupBox):
         self.groupBox.setLayout(layout)
 
         form.addRow(self.groupBox)
-        if mode == 'manual':
-            self.sendButton = QPushButton('SEND')
-            form.addRow(self.sendButton)
+        self.sendButton = QPushButton('SEND')
+        form.addRow(self.sendButton)
 
         self.setLayout(form)
 

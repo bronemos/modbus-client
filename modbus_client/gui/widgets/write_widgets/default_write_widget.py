@@ -1,10 +1,9 @@
 import csv
 
 from modbus_client.gui.style.custom_elements import *
-from modbus_client.gui.widgets.default_widget import DefaultWidget
 
 
-class DefaultWWidget(DefaultWidget):
+class DefaultWWidget(QWidget):
     address_constraint = (0, 65535)
     data_constraint = (0, 65535)
     data_list = list()
@@ -12,8 +11,8 @@ class DefaultWWidget(DefaultWidget):
 
     def __init__(self):
         super(DefaultWWidget, self).__init__()
+        self.layout = QFormLayout()
         self.firstAddress = ClickableLineEdit('0')
-        self.firstAddress.focused.connect(lambda: self.clear_line(self.firstAddress))
 
     def import_csv(self):
         file_name = QFileDialog.getOpenFileName(self, 'Open data csv', '/home')

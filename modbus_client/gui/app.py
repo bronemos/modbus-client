@@ -26,7 +26,7 @@ class Application(QMainWindow):
         layout = QVBoxLayout()
         layout.addWidget(self.HomeWidget)
 
-        self.reqWidget = RequestWidget('manual')
+        self.reqWidget = RequestWidget()
         self.reqWidget.setEnabled(self.connected)
         self.reqWidget.sendButton.clicked.connect(self._validate_and_queue)
 
@@ -102,16 +102,11 @@ class Application(QMainWindow):
             self.centerWidget.setCurrentWidget(self.mainScrollWidget)
 
     def _validate_and_queue(self):
-        try:
-            unit_address = int(self.reqWidget.unitAddress.text())
-        except ValueError:
-            ErrorDialog(self, 'Incorrect unit address value.')
-            return
 
         if not self.reqWidget.stackedRequestWidget.currentWidget().validate_input(self):
             return
 
-        message = self.reqWidget.stackedRequestWidget.currentWidget().generate_message(self.transaction_id, unit_address)
+        message = self.reqWidget.stackedRequestWidget.currentWidget().generate_message(self.transaction_id)
         self.requestLogWidget.update_log(message)
 
         print(message)
