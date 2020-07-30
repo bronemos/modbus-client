@@ -20,6 +20,7 @@ class WriteMultipleRegistersWidget(DefaultWWidget):
         self.setLayout(self.layout)
 
     def validate_input(self, window):
+        self.validate_unit_address(window)
 
         try:
             curr_address = int(self.firstAddress.text())
@@ -46,9 +47,9 @@ class WriteMultipleRegistersWidget(DefaultWWidget):
 
         return True
 
-    def generate_message(self, last_id, unit_address):
+    def generate_message(self, last_id):
         return {'transaction_id': last_id,
-                'unit_address': unit_address,
+                'unit_address': int(self.unitAddress.text()),
                 'address': int(self.firstAddress.text()),
                 'data': self.data_list,
                 'function_code': Codes.WRITE_MULTIPLE_REGISTERS.value}

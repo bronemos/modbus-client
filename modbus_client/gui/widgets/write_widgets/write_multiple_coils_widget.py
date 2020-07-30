@@ -10,7 +10,6 @@ class WriteMultipleCoilsWidget(DefaultWWidget):
         super(WriteMultipleCoilsWidget, self).__init__()
         self.firstAddress.setToolTip(f'Addres of the first coil.\n'
                                      f'Value between {self.address_constraint[0]} and {self.address_constraint[1]}')
-        self.firstAddress.focused.connect(lambda: self.clear_line(self.firstAddress))
 
         self.importButton = QPushButton('Import CSV')
         self.importButton.clicked.connect(self.import_csv)
@@ -20,6 +19,7 @@ class WriteMultipleCoilsWidget(DefaultWWidget):
         self.setLayout(self.layout)
 
     def validate_input(self, window):
+        self.validate_unit_address(window)
         try:
             curr_address = int(self.firstAddress.text())
         except ValueError:
@@ -46,4 +46,5 @@ class WriteMultipleCoilsWidget(DefaultWWidget):
         return True
 
     def generate_message(self):
+        # todo add generate message
         pass

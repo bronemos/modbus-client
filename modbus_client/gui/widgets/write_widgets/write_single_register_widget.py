@@ -11,7 +11,6 @@ class WriteSingleRegisterWidget(DefaultWWidget):
         self.firstAddress.setToolTip(
             f'Address of the register.\nValue between {self.address_constraint[0]} and {self.address_constraint[1]}.')
         self.registerData = ClickableLineEdit('0')
-        self.registerData.focused.connect(lambda: self.clear_line(self.registerData))
 
         # address and value constraints are the same
         self.registerData.setToolTip(
@@ -22,6 +21,8 @@ class WriteSingleRegisterWidget(DefaultWWidget):
         self.setLayout(self.layout)
 
     def validate_input(self, window):
+        self.validate_unit_address(window)
+
         try:
             curr_address = int(self.firstAddress.text())
 
@@ -48,10 +49,10 @@ class WriteSingleRegisterWidget(DefaultWWidget):
 
         return True
 
-    def generate_message(self, last_id, unit_address):
+    def generate_message(self, last_id):
         print(int(self.registerData.text()))
         return {'transaction_id': last_id,
-                'unit_address': unit_address,
+                'unit_address': int(self.unitAddress.text()),
                 'address': int(self.firstAddress.text()),
                 'data': int(self.registerData.text()),
                 'function_code': Codes.WRITE_SINGLE_REGISTER.value}
