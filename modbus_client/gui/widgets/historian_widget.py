@@ -17,7 +17,8 @@ class HistorianWidget(QGroupBox):
         self.request_history = QTableWidget()
         self.request_history.verticalHeader().hide()
         self.request_history.setItemDelegate(CenterDelegate())
-        self.request_history.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.request_history.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.request_history.horizontalHeader().setStretchLastSection(True)
         self.request_history.setEditTriggers(QAbstractItemView.NoEditTriggers)
         header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'Data']
         self.request_history.setColumnCount(len(header_labels))
@@ -31,7 +32,8 @@ class HistorianWidget(QGroupBox):
         self.response_history = QTableWidget()
         self.response_history.verticalHeader().hide()
         self.response_history.setItemDelegate(CenterDelegate())
-        self.response_history.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.response_history.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.response_history.horizontalHeader().setStretchLastSection(True)
         self.response_history.setEditTriggers(QAbstractItemView.NoEditTriggers)
         header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'Data']
         self.response_history.setColumnCount(len(header_labels))

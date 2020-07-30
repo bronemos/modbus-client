@@ -28,7 +28,8 @@ class Application(QMainWindow):
 
         self.HomeWidget = HomeWidget()
         self.HomeWidget.connect_button.clicked.connect(self._connect_disconnect)
-        self.HomeWidget.historian_button.clicked.connect(self._set_center_widget)
+        self.HomeWidget.historian_button.clicked.connect(self._switch_to_historian)
+        self.HomeWidget.live_button.clicked.connect(self._switch_to_live)
 
         self.ReadCoilsWidget = ReadCoilsWidget()
         self.ReadDiscreteInputsWidget = ReadDiscreteInputsWidget()
@@ -105,10 +106,12 @@ class Application(QMainWindow):
 
         self.mainScrollWidget.setWidget(self.reqresWidget)
         self.historianWidget = HistorianWidget()
+        self.liveViewWidget = LiveViewWidget()
 
         self.centerWidget = QStackedWidget()
         self.centerWidget.addWidget(self.mainScrollWidget)
         self.centerWidget.addWidget(self.historianWidget)
+        self.centerWidget.addWidget(self.liveViewWidget)
 
         layout.addWidget(self.centerWidget)
 
@@ -132,12 +135,18 @@ class Application(QMainWindow):
         self.stackedRequestWidget.setCurrentIndex(current)
         self.dropdown.setCurrentIndex(current)
 
-    def _set_center_widget(self):
-        if self.centerWidget.currentIndex() == 0:
-            self.centerWidget.setCurrentIndex(1)
+    def _switch_to_historian(self):
+        if self.centerWidget.currentWidget() != self.historianWidget:
             self.historianWidget.load(self.state_manager.db)
+            self.centerWidget.setCurrentWidget(self.historianWidget)
         else:
-            self.centerWidget.setCurrentIndex(0)
+            self.centerWidget.setCurrentWidget(self.mainScrollWidget)
+
+    def _switch_to_live(self):
+        if self.centerWidget.currentWidget() != self.liveViewWidget:
+            self.centerWidget.setCurrentWidget(self.liveViewWidget)
+        else:
+            self.centerWidget.setCurrentWidget(self.mainScrollWidget)
 
     def _validate_and_queue(self):
         try:
