@@ -26,10 +26,9 @@ class Application(QMainWindow):
         layout = QVBoxLayout()
         layout.addWidget(self.HomeWidget)
 
-        self.reqWidget = RequestWidget()
+        self.reqWidget = RequestWidget('manual')
         self.reqWidget.setEnabled(self.connected)
         self.reqWidget.sendButton.clicked.connect(self._validate_and_queue)
-        self.reqWidget.setAlignment(Qt.AlignCenter)
 
         self.resWidget = QGroupBox('RESPONSE')
         self.resWidget.setEnabled(self.connected)

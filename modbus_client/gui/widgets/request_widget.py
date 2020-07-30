@@ -9,9 +9,10 @@ from modbus_client.resources.codes import Codes
 
 class RequestWidget(QGroupBox):
 
-    def __init__(self):
+    def __init__(self, mode='auto'):
         super(RequestWidget, self).__init__("REQUEST")
         self.stackedRequestWidget = QStackedWidget()
+        self.setAlignment(Qt.AlignCenter)
 
         self.ReadCoilsWidget = ReadCoilsWidget()
         self.ReadDiscreteInputsWidget = ReadDiscreteInputsWidget()
@@ -47,8 +48,9 @@ class RequestWidget(QGroupBox):
         self.groupBox.setLayout(layout)
 
         form.addRow(self.groupBox)
-        self.sendButton = QPushButton('SEND')
-        form.addRow(self.sendButton)
+        if mode == 'manual':
+            self.sendButton = QPushButton('SEND')
+            form.addRow(self.sendButton)
 
         self.setLayout(form)
 
@@ -56,3 +58,5 @@ class RequestWidget(QGroupBox):
         current = self.dropdown.currentIndex()
         self.stackedRequestWidget.setCurrentIndex(current)
         self.dropdown.setCurrentIndex(current)
+
+
