@@ -1,0 +1,5 @@
+from modbus_client.gui.widgets.read_widgets.read_coils_widget import ReadCoilsWidget
+from modbus_client.gui.widgets.read_widgets.read_discrete_inputs_widget import ReadDiscreteInputsWidget
+from modbus_client.gui.widgets.read_widgets.read_holding_registers_widget import ReadHoldingRegistersWidget
+from modbus_client.gui.widgets.read_widgets.read_input_registers_widget import ReadInputRegistersWidget
+from modbus_client.gui.widgets.read_widgets.read_input_registers_widget import ReadInputRegistersWidget

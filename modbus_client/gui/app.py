@@ -2,6 +2,7 @@ import sys
 
 from modbus_client.gui.style.custom_elements import *
 from modbus_client.gui.widgets import *
+from modbus_client.gui.widgets import RequestWidget
 from modbus_client.resources.codes import Codes
 
 
@@ -15,15 +16,6 @@ class Application(QMainWindow):
         self.state_manager = state_manager
         self.state_manager.update.connect(self.update_gui)
 
-        self.stackedRequestWidget = QStackedWidget()
-
-        self.groupBox = QGroupBox()
-        self.groupBox.setAlignment(Qt.AlignCenter)
-
-        layout = QVBoxLayout()
-        layout.addWidget(self.stackedRequestWidget)
-        self.groupBox.setLayout(layout)
-
         self.mainWidget = QWidget()
 
         self.HomeWidget = HomeWidget()
@@ -31,46 +23,13 @@ class Application(QMainWindow):
         self.HomeWidget.historian_button.clicked.connect(self._switch_to_historian)
         self.HomeWidget.live_button.clicked.connect(self._switch_to_live)
 
-        self.ReadCoilsWidget = ReadCoilsWidget()
-        self.ReadDiscreteInputsWidget = ReadDiscreteInputsWidget()
-        self.ReadHoldingRegistersWidget = ReadHoldingRegistersWidget()
-        self.ReadInputRegistersWidget = ReadInputRegistersWidget()
-        self.WriteSingleCoilWidget = WriteSingleCoilWidget()
-        self.WriteSingleRegisterWidget = WriteSingleRegisterWidget()
-        self.WriteMultipleRegistersWidget = WriteMultipleRegistersWidget()
-        self.WriteMultipleCoilsWidget = WriteMultipleCoilsWidget()
-
-        self.stackedRequestWidget.addWidget(self.ReadCoilsWidget)
-        self.stackedRequestWidget.addWidget(self.ReadDiscreteInputsWidget)
-        self.stackedRequestWidget.addWidget(self.ReadHoldingRegistersWidget)
-        self.stackedRequestWidget.addWidget(self.ReadInputRegistersWidget)
-        self.stackedRequestWidget.addWidget(self.WriteSingleCoilWidget)
-        self.stackedRequestWidget.addWidget(self.WriteSingleRegisterWidget)
-        self.stackedRequestWidget.addWidget(self.WriteMultipleCoilsWidget)
-        self.stackedRequestWidget.addWidget(self.WriteMultipleRegistersWidget)
-
         layout = QVBoxLayout()
-        form = QFormLayout()
-        self.dropdown = QComboBox()
-        self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
-        self.dropdown.activated[str].connect(self._change_request_widget)
-        self.unitAddress = ClickableLineEdit('1')
-        self.unitAddress.setToolTip('Unit address.\nValue between 1 and 65535')
-        form.addRow('Unit address: ', self.unitAddress)
-        form.addRow('Function: ', self.dropdown)
         layout.addWidget(self.HomeWidget)
 
-        form.addRow(self.groupBox)
-
-        self.sendButton = QPushButton('SEND')
-        self.sendButton.clicked.connect(self._validate_and_queue)
-        form.addRow(self.sendButton)
-
-        self.reqWidget = QGroupBox('REQUEST')
+        self.reqWidget = RequestWidget()
         self.reqWidget.setEnabled(self.connected)
+        self.reqWidget.sendButton.clicked.connect(self._validate_and_queue)
         self.reqWidget.setAlignment(Qt.AlignCenter)
-
-        self.reqWidget.setLayout(form)
 
         self.resWidget = QGroupBox('RESPONSE')
         self.resWidget.setEnabled(self.connected)
@@ -130,11 +89,6 @@ class Application(QMainWindow):
             self.state_manager.req_queue.put('DC')
             self.update_gui('DC')
 
-    def _change_request_widget(self):
-        current = self.dropdown.currentIndex()
-        self.stackedRequestWidget.setCurrentIndex(current)
-        self.dropdown.setCurrentIndex(current)
-
     def _switch_to_historian(self):
         if self.centerWidget.currentWidget() != self.historianWidget:
             self.historianWidget.load(self.state_manager.db)
@@ -150,15 +104,15 @@ class Application(QMainWindow):
 
     def _validate_and_queue(self):
         try:
-            unit_address = int(self.unitAddress.text())
+            unit_address = int(self.reqWidget.unitAddress.text())
         except ValueError:
             ErrorDialog(self, 'Incorrect unit address value.')
             return
 
-        if not self.stackedRequestWidget.currentWidget().validate_input(self):
+        if not self.reqWidget.stackedRequestWidget.currentWidget().validate_input(self):
             return
 
-        message = self.stackedRequestWidget.currentWidget().generate_message(self.transaction_id, unit_address)
+        message = self.reqWidget.stackedRequestWidget.currentWidget().generate_message(self.transaction_id, unit_address)
         self.requestLogWidget.update_log(message)
 
         print(message)
@@ -184,7 +138,7 @@ class Application(QMainWindow):
             self.HomeWidget.indicator.setMovie(self.HomeWidget.disconnected_movie)
             return
         self.responseLogWidget.update_log(message)
-        current_selection = getattr(Codes, self.dropdown.currentText().replace(' ', '_')).value
+        current_selection = getattr(Codes, self.reqWidget.dropdown.currentText().replace(' ', '_')).value
         if current_selection == 1:
             self.res_message.setText(f"Coils set are: {','.join(message['set_list'])}" if len(message['set_list'])
                                      else 'No coils are set')

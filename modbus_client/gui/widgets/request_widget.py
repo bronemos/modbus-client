@@ -1,8 +1,9 @@
-from PySide2.QtWidgets import *
 from PySide2.QtCore import Qt
-from modbus_client.gui.widgets import *
+from PySide2.QtWidgets import *
 
 from modbus_client.gui.style.custom_elements import ClickableLineEdit
+from modbus_client.gui.widgets.read_widgets import *
+from modbus_client.gui.widgets.write_widgets import *
 from modbus_client.resources.codes import Codes
 
 
@@ -10,7 +11,6 @@ class RequestWidget(QGroupBox):
 
     def __init__(self):
         super(RequestWidget, self).__init__("REQUEST")
-
         self.stackedRequestWidget = QStackedWidget()
 
         self.ReadCoilsWidget = ReadCoilsWidget()
@@ -30,13 +30,6 @@ class RequestWidget(QGroupBox):
         self.stackedRequestWidget.addWidget(self.WriteSingleRegisterWidget)
         self.stackedRequestWidget.addWidget(self.WriteMultipleCoilsWidget)
         self.stackedRequestWidget.addWidget(self.WriteMultipleRegistersWidget)
-
-        self.groupBox = QGroupBox()
-        self.groupBox.setAlignment(Qt.AlignCenter)
-
-        layout = QVBoxLayout()
-        layout.addWidget(self.stackedRequestWidget)
-        self.groupBox.setLayout(layout)
         form = QFormLayout()
         self.dropdown = QComboBox()
         self.dropdown.addItems([x.name.replace('_', ' ') for x in Codes])
@@ -46,10 +39,15 @@ class RequestWidget(QGroupBox):
         form.addRow('Unit address: ', self.unitAddress)
         form.addRow('Function: ', self.dropdown)
 
-        form.addRow(self.groupBox)
+        self.groupBox = QGroupBox()
+        self.groupBox.setAlignment(Qt.AlignCenter)
 
+        layout = QVBoxLayout()
+        layout.addWidget(self.stackedRequestWidget)
+        self.groupBox.setLayout(layout)
+
+        form.addRow(self.groupBox)
         self.sendButton = QPushButton('SEND')
-        self.sendButton.clicked.connect(self._validate_and_queue)
         form.addRow(self.sendButton)
 
         self.setLayout(form)

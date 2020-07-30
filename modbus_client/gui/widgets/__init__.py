@@ -4,12 +4,5 @@ from modbus_client.gui.widgets.live_view_widget import LiveViewWidget
 from modbus_client.gui.widgets.request_widget import RequestWidget
 from modbus_client.gui.widgets.log_widgets.request_log_widget import RequestLogWidget
 from modbus_client.gui.widgets.log_widgets.response_log_widget import ResponseLogWidget
-from modbus_client.gui.widgets.read_widgets.read_coils_widget import ReadCoilsWidget
-from modbus_client.gui.widgets.read_widgets.read_discrete_inputs_widget import ReadDiscreteInputsWidget
-from modbus_client.gui.widgets.read_widgets.read_holding_registers_widget import ReadHoldingRegistersWidget
-from modbus_client.gui.widgets.read_widgets.read_input_registers_widget import ReadInputRegistersWidget
-from modbus_client.gui.widgets.read_widgets.read_input_registers_widget import ReadInputRegistersWidget
-from modbus_client.gui.widgets.write_widgets.write_multiple_coils_widget import WriteMultipleCoilsWidget
-from modbus_client.gui.widgets.write_widgets.write_multiple_registers_widget import WriteMultipleRegistersWidget
-from modbus_client.gui.widgets.write_widgets.write_single_coil_widget import WriteSingleCoilWidget
-from modbus_client.gui.widgets.write_widgets.write_single_register_widget import WriteSingleRegisterWidget
+from modbus_client.gui.widgets.read_widgets import *
+from modbus_client.gui.widgets.write_widgets import *
