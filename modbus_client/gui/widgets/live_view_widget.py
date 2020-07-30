@@ -1,14 +1,19 @@
 from PySide2 import QtCore
 from PySide2.QtWidgets import *
 
+from modbus_client.gui.widgets.live_response_widget import LiveResponseWidget
 from modbus_client.gui.widgets.read_widgets import *
+from modbus_client.state_manager.counter import Counter
 
 
 class LiveViewWidget(QGroupBox):
 
-    def __init__(self):
+    def __init__(self, req_queue):
         super(LiveViewWidget, self).__init__()
         self.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.req_queue = req_queue
+
         layout = QGridLayout()
         for i in range(2):
             layout.setRowStretch(i, 1)
@@ -17,47 +22,64 @@ class LiveViewWidget(QGroupBox):
 
         read_coils = QGroupBox("READ COILS")
         read_coils.setAlignment(QtCore.Qt.AlignCenter)
-        read_coils_layout = QHBoxLayout()
-        read_coils_layout.addWidget(ReadCoilsWidget())
+        read_coils_layout = QVBoxLayout()
+
+        self.ReadCoilsWidget = ReadCoilsWidget()
+        read_coils_layout.addWidget(self.ReadCoilsWidget)
+
+        self.ReadCoilsResponse = LiveResponseWidget()
+        read_coils_layout.addWidget(self.ReadCoilsResponse)
         read_coils.setLayout(read_coils_layout)
 
         read_discrete_inputs = QGroupBox("READ DISCRETE INPUTS")
         read_discrete_inputs.setAlignment(QtCore.Qt.AlignCenter)
-        read_discrete_inputs_layout = QHBoxLayout()
-        read_discrete_inputs_layout.addWidget(ReadDiscreteInputsWidget())
+        read_discrete_inputs_layout = QVBoxLayout()
+
+        self.ReadDiscreteInputsWidget = ReadDiscreteInputsWidget()
+        read_discrete_inputs_layout.addWidget(self.ReadDiscreteInputsWidget)
+
+        self.ReadDiscreteInputsResponse = LiveResponseWidget()
+        read_discrete_inputs_layout.addWidget(self.ReadDiscreteInputsResponse)
         read_discrete_inputs.setLayout(read_discrete_inputs_layout)
 
         read_holding_registers = QGroupBox("READ HOLDING REGISTERS")
         read_holding_registers.setAlignment(QtCore.Qt.AlignCenter)
-        read_holding_registers_layout = QHBoxLayout()
-        read_holding_registers_layout.addWidget(ReadHoldingRegistersWidget())
+        read_holding_registers_layout = QVBoxLayout()
+
+        self.ReadHoldingRegistersWidget = ReadHoldingRegistersWidget()
+        read_holding_registers_layout.addWidget(self.ReadHoldingRegistersWidget)
+
+        self.ReadHoldingRegistersResponse = LiveResponseWidget()
+        read_holding_registers_layout.addWidget(self.ReadHoldingRegistersResponse)
         read_holding_registers.setLayout(read_holding_registers_layout)
 
         read_input_registers = QGroupBox("READ INPUT REGISTERS")
         read_input_registers.setAlignment(QtCore.Qt.AlignCenter)
-        read_input_registers_layout = QHBoxLayout()
-        read_input_registers_layout.addWidget(ReadInputRegistersWidget())
+        read_input_registers_layout = QVBoxLayout()
+
+        self.ReadInputRegistersWidget = ReadInputRegistersWidget()
+        read_input_registers_layout.addWidget(self.ReadInputRegistersWidget)
+
+        self.ReadInputRegistersResponse = LiveResponseWidget()
+        read_input_registers_layout.addWidget(self.ReadInputRegistersResponse)
         read_input_registers.setLayout(read_input_registers_layout)
 
-        read_coils_response = QGroupBox()
-        read_coils_response.setAlignment(QtCore.Qt.AlignCenter)
-
-        read_discrete_inputs_response = QGroupBox()
-        read_discrete_inputs_response.setAlignment(QtCore.Qt.AlignCenter)
-
-        read_holding_registers_response = QGroupBox()
-        read_holding_registers_response.setAlignment(QtCore.Qt.AlignCenter)
-
-        read_input_registers_response = QGroupBox()
-        read_input_registers_response.setAlignment(QtCore.Qt.AlignCenter)
+        self.progressBar = QProgressBar()
+        self.progressBar.setMaximum(100)
+        self.counter = Counter()
+        self.counter.update_counter.connect(self.progressBar.setValue)
+        self.counter.update_live_view.connect(self.update_view)
 
         layout.addWidget(read_coils, 0, 0)
         layout.addWidget(read_discrete_inputs, 0, 1)
         layout.addWidget(read_holding_registers, 0, 2)
         layout.addWidget(read_input_registers, 0, 3)
-        layout.addWidget(read_coils_response, 1, 0)
-        layout.addWidget(read_discrete_inputs_response, 1, 1)
-        layout.addWidget(read_holding_registers_response, 1, 2)
-        layout.addWidget(read_input_registers_response, 1, 3)
+        layout.addWidget(self.progressBar, 1, 0, -1, -1)
 
         self.setLayout(layout)
+
+    def update_view(self):
+        self.req_queue.put(self.ReadCoilsWidget.generate_message(0, 1))
+        self.req_queue.put(self.ReadDiscreteInputsWidget.generate_message(0, 1))
+        self.req_queue.put(self.ReadHoldingRegistersWidget.generate_message(0, 1))
+        self.req_queue.put(self.ReadInputRegistersWidget.generate_message(0, 1))

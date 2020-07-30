@@ -64,7 +64,7 @@ class Application(QMainWindow):
 
         self.mainScrollWidget.setWidget(self.reqresWidget)
         self.historianWidget = HistorianWidget()
-        self.liveViewWidget = LiveViewWidget()
+        self.liveViewWidget = LiveViewWidget(self.state_manager.req_queue)
 
         self.centerWidget = QStackedWidget()
         self.centerWidget.addWidget(self.mainScrollWidget)
@@ -127,6 +127,7 @@ class Application(QMainWindow):
             self.resWidget.setEnabled(self.connected)
             self.HomeWidget.connect_button.setText('Disconnect')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.connected_movie)
+            self.liveViewWidget.counter.start()
             return
         elif message == 'DC' or message == 1000:
             self.connected = False
@@ -135,6 +136,7 @@ class Application(QMainWindow):
             self.resWidget.setEnabled(self.connected)
             self.HomeWidget.connect_button.setText('Connect')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.disconnected_movie)
+            self.liveViewWidget.counter.requestInterruption()
             return
         self.responseLogWidget.update_log(message)
         current_selection = getattr(Codes, self.reqWidget.dropdown.currentText().replace(' ', '_')).value
