@@ -69,7 +69,7 @@ class LiveViewWidget(QGroupBox):
         self.progressBar.setTextVisible(False)
         self.counter = Counter()
         self.counter.update_counter.connect(self.progressBar.setValue)
-        self.counter.update_live_view.connect(self.update_view)
+        self.counter.update_live_view.connect(self.update_view_request)
 
         layout.addWidget(read_coils, 0, 0)
         layout.addWidget(read_discrete_inputs, 0, 1)
@@ -79,12 +79,24 @@ class LiveViewWidget(QGroupBox):
 
         self.setLayout(layout)
 
-    def update_view(self):
+    def update_view_request(self):
         if self.ReadCoilsWidget.validate_input(self) and \
                 self.ReadDiscreteInputsWidget.validate_input(self) and \
                 self.ReadHoldingRegistersWidget.validate_input(self) and \
                 self.ReadInputRegistersWidget.validate_input(self):
             self.req_queue.put(self.ReadCoilsWidget.generate_message(0))
-            self.req_queue.put(self.ReadDiscreteInputsWidget.generate_message(0))
-            self.req_queue.put(self.ReadHoldingRegistersWidget.generate_message(0))
-            self.req_queue.put(self.ReadInputRegistersWidget.generate_message(0))
+            self.req_queue.put(self.ReadDiscreteInputsWidget.generate_message(1))
+            self.req_queue.put(self.ReadHoldingRegistersWidget.generate_message(2))
+            self.req_queue.put(self.ReadInputRegistersWidget.generate_message(3))
+
+    def update_view(self, message):
+        if message['transaction_id'] == 0:
+            self.ReadCoilsResponse.refresh(message)
+        elif message['transaction_id'] == 1:
+            self.ReadDiscreteInputsResponse.refresh(message)
+        elif message['transaction_id'] == 2:
+            self.ReadHoldingRegistersResponse.refresh(message)
+        else:
+            self.ReadInputRegistersResponse.refresh(message)
+
+

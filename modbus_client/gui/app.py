@@ -8,7 +8,7 @@ from modbus_client.resources.codes import Codes
 
 class Application(QMainWindow):
     connected = False
-    transaction_id = 0
+    transaction_id = 128
 
     def __init__(self, state_manager, parent=None):
         QMainWindow.__init__(self, parent)
@@ -65,6 +65,7 @@ class Application(QMainWindow):
         self.mainScrollWidget.setWidget(self.reqresWidget)
         self.historianWidget = HistorianWidget()
         self.liveViewWidget = LiveViewWidget(self.state_manager.req_queue)
+        self.liveViewWidget.setEnabled(self.connected)
 
         self.centerWidget = QStackedWidget()
         self.centerWidget.addWidget(self.mainScrollWidget)
@@ -78,9 +79,10 @@ class Application(QMainWindow):
 
     def _connect_disconnect(self):
         if not self.connected:
-            self.HomeWidget.connect_button.setEnabled(self.connected)
+            self.HomeWidget.connect_button.setEnabled(False)
             self.reqWidget.setEnabled(self.connected)
             self.resWidget.setEnabled(self.connected)
+            self.liveViewWidget.setEnabled(self.connected)
             self.HomeWidget.connect_button.setText('Connecting...')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.connecting_movie)
             self.state_manager.run_loop()
@@ -120,6 +122,7 @@ class Application(QMainWindow):
             self.HomeWidget.connect_button.setEnabled(True)
             self.reqWidget.setEnabled(self.connected)
             self.resWidget.setEnabled(self.connected)
+            self.liveViewWidget.setEnabled(self.connected)
             self.HomeWidget.connect_button.setText('Disconnect')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.connected_movie)
             self.liveViewWidget.counter.start()
@@ -129,23 +132,27 @@ class Application(QMainWindow):
             self.HomeWidget.connect_button.setEnabled(True)
             self.reqWidget.setEnabled(self.connected)
             self.resWidget.setEnabled(self.connected)
+            self.liveViewWidget.setEnabled(self.connected)
             self.HomeWidget.connect_button.setText('Connect')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.disconnected_movie)
             self.liveViewWidget.counter.requestInterruption()
             return
-        self.responseLogWidget.update_log(message)
-        current_selection = getattr(Codes, self.reqWidget.dropdown.currentText().replace(' ', '_')).value
-        if current_selection == 1:
-            self.res_message.setText(f"Coils set are: {','.join(message['set_list'])}" if len(message['set_list'])
-                                     else 'No coils are set')
-        elif current_selection == 2:
-            self.res_message.setText(
-                f"Discrete inputs status: {','.join(message['set_list'])}" if len(message['set_list'])
-                else 'No discrete inputs are set.')
-        elif current_selection == 3:
-            self.res_message.setText(f"Holding registers data: {','.join(message['register_data'])}")
-        elif current_selection == 4:
-            self.res_message.setText(f"Input registers data: {','.join(message['register_data'])}")
+        elif message['transaction_id'] >= self.transaction_id - 1:
+            self.responseLogWidget.update_log(message)
+            current_selection = getattr(Codes, self.reqWidget.dropdown.currentText().replace(' ', '_')).value
+            if current_selection == 1:
+                self.res_message.setText(f"Coils set are: {','.join(message['set_list'])}" if len(message['set_list'])
+                                         else 'No coils are set')
+            elif current_selection == 2:
+                self.res_message.setText(
+                    f"Discrete inputs status: {','.join(message['set_list'])}" if len(message['set_list'])
+                    else 'No discrete inputs are set.')
+            elif current_selection == 3:
+                self.res_message.setText(f"Holding registers data: {','.join(message['register_data'])}")
+            elif current_selection == 4:
+                self.res_message.setText(f"Input registers data: {','.join(message['register_data'])}")
+        else:
+            self.liveViewWidget.update_view(message)
 
 
 def run_gui(state_manager):
