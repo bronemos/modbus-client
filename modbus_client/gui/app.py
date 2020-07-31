@@ -138,19 +138,21 @@ class Application(QMainWindow):
             self.liveViewWidget.counter.requestInterruption()
             return
         elif message['transaction_id'] >= self.transaction_id - 1:
-            self.responseLogWidget.update_log(message)
-            current_selection = getattr(Codes, self.reqWidget.dropdown.currentText().replace(' ', '_')).value
-            if current_selection == 1:
-                self.res_message.setText(f"Coils set are: {','.join(message['set_list'])}" if len(message['set_list'])
-                                         else 'No coils are set')
-            elif current_selection == 2:
-                self.res_message.setText(
-                    f"Discrete inputs status: {','.join(message['set_list'])}" if len(message['set_list'])
-                    else 'No discrete inputs are set.')
-            elif current_selection == 3:
-                self.res_message.setText(f"Holding registers data: {','.join(message['register_data'])}")
-            elif current_selection == 4:
-                self.res_message.setText(f"Input registers data: {','.join(message['register_data'])}")
+            if message['function_code'] <= 4:
+                self.responseLogWidget.update_log(message)
+                current_selection = getattr(Codes, self.reqWidget.dropdown.currentText().replace(' ', '_')).value
+                if current_selection == 1:
+                    self.res_message.setText(
+                        f"Coils set are: {','.join(message['set_list'])}" if len(message['set_list'])
+                        else 'No coils are set')
+                elif current_selection == 2:
+                    self.res_message.setText(
+                        f"Discrete inputs status: {','.join(message['set_list'])}" if len(message['set_list'])
+                        else 'No discrete inputs are set.')
+                elif current_selection == 3:
+                    self.res_message.setText(f"Holding registers data: {','.join(message['register_data'])}")
+                elif current_selection == 4:
+                    self.res_message.setText(f"Input registers data: {','.join(message['register_data'])}")
         else:
             self.liveViewWidget.update_view(message)
 
