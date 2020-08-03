@@ -18,7 +18,7 @@ class ResponseLogWidget(QGroupBox):
         self.table.setItemDelegate(CenterDelegate())
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.table.horizontalHeader().setStretchLastSection(True)
-        header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'Coils Set', 'Register Data']
+        header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'Data']
         self.table.setColumnCount(len(header_labels))
         self.table.setHorizontalHeaderLabels(header_labels)
 
@@ -33,7 +33,6 @@ class ResponseLogWidget(QGroupBox):
         self.table.setItem(0, 1, QTableWidgetItem(str(transaction.get('transaction_id', '-'))))
         self.table.setItem(0, 2, QTableWidgetItem(str(transaction.get('unit_address', '-'))))
         self.table.setItem(0, 3, QTableWidgetItem(str(transaction.get('function_code', '-'))))
-        self.table.setItem(0, 4, QTableWidgetItem(', '.join(transaction.get('set_list', '-'))))
-        self.table.setItem(0, 5, QTableWidgetItem(', '.join(transaction.get('register_data', '-'))))
-        self.setAlignment(Qt.AlignCenter)
+        self.table.setItem(0, 4, QTableWidgetItem(str(transaction.get('raw_data', '-'))))
+
 

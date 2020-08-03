@@ -109,7 +109,6 @@ class Application(QMainWindow):
             return
 
         message = self.reqWidget.stackedRequestWidget.currentWidget().generate_message(self.transaction_id)
-        self.requestLogWidget.update_log(message)
 
         print(message)
         self.transaction_id += 1
@@ -127,7 +126,7 @@ class Application(QMainWindow):
             self.HomeWidget.indicator.setMovie(self.HomeWidget.connected_movie)
             self.liveViewWidget.counter.start()
             return
-        elif message == 'DC' or message == 1000:
+        elif message == 'DC' or message == 1000 or message == 'wstunnel_error':
             self.connected = False
             self.HomeWidget.connect_button.setEnabled(True)
             self.reqWidget.setEnabled(self.connected)
@@ -136,10 +135,15 @@ class Application(QMainWindow):
             self.HomeWidget.connect_button.setText('Connect')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.disconnected_movie)
             self.liveViewWidget.counter.requestInterruption()
+            if message == 'wstunnel_error':
+                ErrorDialog(self, 'Make sure WSTunnel is running!')
+            elif message == 1000:
+                ErrorDialog(self, 'Cannot connect to the device!')
             return
         elif message['transaction_id'] >= self.transaction_id - 1:
+            self.requestLogWidget.update_log(message)
+            self.responseLogWidget.update_log(message)
             if message['function_code'] <= 4:
-                self.responseLogWidget.update_log(message)
                 current_selection = getattr(Codes, self.reqWidget.dropdown.currentText().replace(' ', '_')).value
                 if current_selection == 1:
                     self.res_message.setText(

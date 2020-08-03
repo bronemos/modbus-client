@@ -26,8 +26,12 @@ class StateManager(QObject):
 
     async def _state_manager_loop(self):
         self.connection = Connection()
-        connection_response = await self.connection.connect()
-        self.update.emit(connection_response)
+        try:
+            connection_response = await self.connection.connect()
+            self.update.emit(connection_response)
+        except Exception:
+            self.update.emit('wstunnel_error')
+
         writer_future = asyncio.ensure_future(self.write_loop())
         reader_future = asyncio.ensure_future(self.connection.ws_reader())
         await asyncio.wait([writer_future, reader_future], return_when=asyncio.FIRST_COMPLETED)
@@ -45,20 +49,21 @@ class StateManager(QObject):
                 response = await self.connection.ws_writer(message)
                 print(response['raw_data'])
                 print(response['raw_request'])
-                try:
-                    self.db.execute('''INSERT INTO response_history 
-                                    VALUES (?, ?, ?, ?, ?);''',
-                                    (datetime.now(), response['transaction_id'], response['unit_address'],
-                                     response['function_code'], response['raw_data']))
-                    self.db_conn.commit()
-                    self.db.execute('''INSERT INTO request_history
-                                    VALUES (?, ?, ?, ?, ?);''',
-                                    (datetime.now(), response['transaction_id'], response['unit_address'],
-                                     response['function_code'], response['raw_request']))
-                    self.db_conn.commit()
-                    print('inserted successfully')
-                except Exception as e:
-                    print(e)
+                if response['transaction_id'] >= 128:
+                    try:
+                        self.db.execute('''INSERT INTO response_history 
+                                        VALUES (?, ?, ?, ?, ?);''',
+                                        (datetime.now(), response['transaction_id'], response['unit_address'],
+                                         response['function_code'], response['raw_data']))
+                        self.db_conn.commit()
+                        self.db.execute('''INSERT INTO request_history
+                                        VALUES (?, ?, ?, ?, ?);''',
+                                        (datetime.now(), response['transaction_id'], response['unit_address'],
+                                         response['function_code'], response['raw_request']))
+                        self.db_conn.commit()
+                        print('inserted successfully')
+                    except Exception as e:
+                        print(e)
                 self.update.emit(response)
             except queue.Empty:
                 pass

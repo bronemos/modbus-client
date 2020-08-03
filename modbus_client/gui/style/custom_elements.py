@@ -67,7 +67,7 @@ class ErrorDialog(QDialog):
 
     def __init__(self, parent, error_message):
         super(ErrorDialog, self).__init__(parent)
-        self.setWindowTitle('Input error!')
+        self.setWindowTitle('Error!')
         self.button = QPushButton('OK')
         self.button.clicked.connect(self.close)
         self.layout = QVBoxLayout()

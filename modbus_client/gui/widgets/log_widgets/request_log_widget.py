@@ -18,7 +18,7 @@ class RequestLogWidget(QGroupBox):
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'First Address', 'Count']
+        header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'Data']
         self.table.setColumnCount(len(header_labels))
         self.table.setHorizontalHeaderLabels(header_labels)
 
@@ -33,6 +33,5 @@ class RequestLogWidget(QGroupBox):
         self.table.setItem(0, 1, QTableWidgetItem(str(transaction.get('transaction_id', '-'))))
         self.table.setItem(0, 2, QTableWidgetItem(str(transaction.get('unit_address', '-'))))
         self.table.setItem(0, 3, QTableWidgetItem(str(transaction.get('function_code', '-'))))
-        self.table.setItem(0, 4, QTableWidgetItem(str(transaction.get('address', '-'))))
-        self.table.setItem(0, 5, QTableWidgetItem(str(transaction.get('count', '-'))))
+        self.table.setItem(0, 4, QTableWidgetItem(str(transaction.get('raw_request', '-'))))
 

@@ -15,7 +15,7 @@ class HistorianWidget(QGroupBox):
         request_box = QGroupBox("REQUEST HISTORY")
         request_box.setAlignment(QtCore.Qt.AlignCenter)
         self.request_history = QTableWidget()
-        self.request_history.verticalHeader().hide()
+        #self.request_history.verticalHeader().hide()
         self.request_history.setItemDelegate(CenterDelegate())
         self.request_history.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.request_history.horizontalHeader().setStretchLastSection(True)
@@ -30,7 +30,7 @@ class HistorianWidget(QGroupBox):
         response_box = QGroupBox("RESPONSE HISTORY")
         response_box.setAlignment(QtCore.Qt.AlignCenter)
         self.response_history = QTableWidget()
-        self.response_history.verticalHeader().hide()
+        #self.response_history.verticalHeader().hide()
         self.response_history.setItemDelegate(CenterDelegate())
         self.response_history.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.response_history.horizontalHeader().setStretchLastSection(True)
@@ -47,7 +47,7 @@ class HistorianWidget(QGroupBox):
         self.setLayout(layout)
 
     def load(self, cursor):
-        cursor.execute('''SELECT * FROM response_history''')
+        cursor.execute('''SELECT * FROM response_history ORDER BY  transaction_timestamp DESC LIMIT 150''')
         responses = cursor.fetchall()
         for response in responses:
             if response not in self.existing_responses:
@@ -60,7 +60,7 @@ class HistorianWidget(QGroupBox):
 
         self.existing_responses = self.existing_responses | set(responses)
 
-        cursor.execute('''SELECT * FROM request_history''')
+        cursor.execute('''SELECT * FROM request_history ORDER BY  transaction_timestamp DESC LIMIT 150''')
         requests = cursor.fetchall()
         for request in requests:
             if request not in self.existing_requests:
