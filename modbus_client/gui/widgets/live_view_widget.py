@@ -3,7 +3,6 @@ from PySide2.QtWidgets import *
 
 from modbus_client.gui.widgets.live_response_widget import LiveResponseWidget
 from modbus_client.gui.widgets.read_widgets import *
-from modbus_client.state_manager.counter import Counter
 
 
 class LiveViewWidget(QGroupBox):
@@ -67,9 +66,6 @@ class LiveViewWidget(QGroupBox):
         self.progressBar = QProgressBar()
         self.progressBar.setMaximum(100)
         self.progressBar.setTextVisible(False)
-        self.counter = Counter()
-        self.counter.update_counter.connect(self.progressBar.setValue)
-        self.counter.update_live_view.connect(self.update_view_request)
 
         layout.addWidget(read_coils, 0, 0)
         layout.addWidget(read_discrete_inputs, 0, 1)

@@ -13,6 +13,8 @@ from modbus_client.communication.connection import Connection
 class StateManager(QObject):
     update = Signal(dict)
     current_state = dict()
+    update_counter = Signal()
+    update_view = Signal()
 
     def __init__(self):
         super(StateManager, self).__init__()
@@ -21,8 +23,9 @@ class StateManager(QObject):
         self.db = self.db_conn.cursor()
 
     def run_loop(self):
-        loop_thread = Thread(target=lambda: asyncio.new_event_loop().run_until_complete(self._state_manager_loop()))
-        loop_thread.start()
+        self.loop_thread = Thread(
+            target=lambda: asyncio.new_event_loop().run_until_complete(self._state_manager_loop()), daemon=True)
+        self.loop_thread.start()
 
     async def _state_manager_loop(self):
         self.connection = Connection()
@@ -34,7 +37,9 @@ class StateManager(QObject):
 
         writer_future = asyncio.ensure_future(self.write_loop())
         reader_future = asyncio.ensure_future(self.connection.ws_reader())
-        await asyncio.wait([writer_future, reader_future], return_when=asyncio.FIRST_COMPLETED)
+        counter_future = asyncio.ensure_future(self.counter())
+        await asyncio.wait([writer_future, reader_future, counter_future], return_when=asyncio.FIRST_COMPLETED)
+        counter_future.cancel()
         writer_future.cancel()
         reader_future.cancel()
 
@@ -67,3 +72,10 @@ class StateManager(QObject):
                 self.update.emit(response)
             except queue.Empty:
                 pass
+
+    async def counter(self):
+        while True:
+            for i in range(1, 101):
+                await asyncio.sleep(0.03)
+                self.update_counter.emit(i)
+            self.update_view.emit()

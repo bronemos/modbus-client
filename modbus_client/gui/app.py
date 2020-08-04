@@ -1,9 +1,8 @@
-import sys
-
 from modbus_client.gui.style.custom_elements import *
 from modbus_client.gui.widgets import *
 from modbus_client.gui.widgets import RequestWidget
 from modbus_client.resources.codes import Codes
+from time import sleep
 
 
 class Application(QMainWindow):
@@ -64,6 +63,8 @@ class Application(QMainWindow):
         p.setColor(self.historianWidget.backgroundRole(), Qt.white)
         self.historianWidget.setPalette(p)
         self.liveViewWidget = LiveViewWidget(self.state_manager.req_queue)
+        self.state_manager.update_counter.connect(self.liveViewWidget.progressBar.setValue)
+        self.state_manager.update_view.connect(self.liveViewWidget.update_view)
         p = self.liveViewWidget.palette()
         p.setColor(self.liveViewWidget.backgroundRole(), Qt.white)
         self.liveViewWidget.setPalette(p)
@@ -73,7 +74,6 @@ class Application(QMainWindow):
         self.centerWidget.addWidget(self.reqresWidget)
         self.centerWidget.addWidget(self.historianWidget)
         self.centerWidget.addWidget(self.liveViewWidget)
-
 
         layout.addWidget(self.centerWidget)
 
@@ -140,7 +140,6 @@ class Application(QMainWindow):
             self.liveViewWidget.setEnabled(self.connected)
             self.HomeWidget.connect_button.setText('Disconnect')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.connected_movie)
-            self.liveViewWidget.counter.start()
             return
         elif message == 'DC' or message == 1000 or message == 'wstunnel_error':
             self.connected = False
@@ -150,7 +149,7 @@ class Application(QMainWindow):
             self.liveViewWidget.setEnabled(self.connected)
             self.HomeWidget.connect_button.setText('Connect')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.disconnected_movie)
-            self.liveViewWidget.counter.requestInterruption()
+            self.liveViewWidget.progressBar.setValue(0)
             if message == 'wstunnel_error':
                 ErrorDialog(self, 'Make sure WSTunnel is running!')
             elif message == 1000:
@@ -178,6 +177,7 @@ class Application(QMainWindow):
             self.liveViewWidget.update_view(message)
 
 
+
 def run_gui(state_manager):
     app = QApplication()
     app.setApplicationDisplayName('Modbus Client GUI')
@@ -188,4 +188,4 @@ def run_gui(state_manager):
     mainWindow.setPalette(p)
     mainWindow.setMinimumSize(1400, 800)
     mainWindow.show()
-    sys.exit(app.exec_())
+    app.exec_()
