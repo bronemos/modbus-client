@@ -108,12 +108,14 @@ class Application(QMainWindow):
             self.centerWidget.setCurrentWidget(self.reqresWidget)
 
     def _switch_to_live_popup(self):
-        self.centerWidget.setCurrentWidget(self.reqresWidget)
+        if self.centerWidget.currentWidget() == self.liveViewWidget:
+            self.centerWidget.setCurrentWidget(self.reqresWidget)
         self.liveViewWidget.setParent(None)
         self.liveViewWidget.show()
 
     def _switch_to_historian_popup(self):
-        self.centerWidget.setCurrentWidget(self.reqresWidget)
+        if self.centerWidget.currentWidget() == self.historianWidget:
+            self.centerWidget.setCurrentWidget(self.reqresWidget)
         self.historianWidget.load(self.state_manager.db)
         self.historianWidget.setParent(None)
         self.historianWidget.show()
