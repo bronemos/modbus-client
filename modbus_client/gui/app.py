@@ -148,7 +148,6 @@ class Application(QMainWindow):
             self.liveViewWidget.setEnabled(self.connected)
             self.HomeWidget.connect_button.setText('Connect')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.disconnected_movie)
-            self.liveViewWidget.progressBar.setValue(0)
             if message == 'wstunnel_error':
                 ErrorDialog(self, 'Make sure WSTunnel is running!')
             elif message == 1000:
@@ -174,7 +173,6 @@ class Application(QMainWindow):
                     self.res_message.setText(f"Input registers data: {','.join(message['register_data'])}")
         else:
             self.liveViewWidget.update_view(message)
-
 
 
 def run_gui(state_manager):

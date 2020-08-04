@@ -26,6 +26,7 @@ class StateManager(QObject):
         self.db = self.db_conn.cursor()
 
     def run_loop(self):
+        self.disconnecting = False
         self.loop_thread = Thread(
             target=lambda: asyncio.new_event_loop().run_until_complete(self._state_manager_loop()), daemon=True)
         self.loop_thread.start()
@@ -50,6 +51,8 @@ class StateManager(QObject):
         while True:
             message = await asyncio.get_event_loop().run_in_executor(self.executor, self._ext_get_message)
             if message == 'DC':
+                self.disconnecting = True
+                self.update_counter.emit(0)
                 await self.connection.session.close()
                 return
             print(message)
@@ -75,10 +78,11 @@ class StateManager(QObject):
 
     async def counter(self):
         while True:
+            self.update_view.emit()
             for i in range(1, 101):
                 await asyncio.sleep(0.03)
-                self.update_counter.emit(i)
-            self.update_view.emit()
+                if not self.disconnecting:
+                    self.update_counter.emit(i)
 
     def _ext_get_message(self):
         return self.req_queue.get()
