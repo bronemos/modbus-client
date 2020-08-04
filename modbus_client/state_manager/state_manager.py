@@ -9,8 +9,11 @@ from PySide2.QtCore import QObject, Signal
 
 from modbus_client.communication.connection import Connection
 
+from concurrent.futures import ThreadPoolExecutor
+
 
 class StateManager(QObject):
+    executor = ThreadPoolExecutor(max_workers=1)
     update = Signal(dict)
     current_state = dict()
     update_counter = Signal(int)
@@ -38,40 +41,37 @@ class StateManager(QObject):
         writer_future = asyncio.ensure_future(self.write_loop())
         reader_future = asyncio.ensure_future(self.connection.ws_reader())
         counter_future = asyncio.ensure_future(self.counter())
-        await asyncio.wait([counter_future], return_when=asyncio.FIRST_COMPLETED)
+        await asyncio.wait([writer_future, reader_future, counter_future], return_when=asyncio.FIRST_COMPLETED)
         counter_future.cancel()
         writer_future.cancel()
         reader_future.cancel()
 
     async def write_loop(self):
         while True:
-            try:
-                message = self.req_queue.get()
-                if message == 'DC':
-                    await self.connection.session.close()
-                    return
-                print(message)
-                response = await self.connection.ws_writer(message)
-                print(response['raw_data'])
-                print(response['raw_request'])
-                if response['transaction_id'] >= 128:
-                    try:
-                        self.db.execute('''INSERT INTO response_history 
-                                        VALUES (?, ?, ?, ?, ?);''',
-                                        (datetime.now(), response['transaction_id'], response['unit_address'],
-                                         response['function_code'], response['raw_data']))
-                        self.db_conn.commit()
-                        self.db.execute('''INSERT INTO request_history
-                                        VALUES (?, ?, ?, ?, ?);''',
-                                        (datetime.now(), response['transaction_id'], response['unit_address'],
-                                         response['function_code'], response['raw_request']))
-                        self.db_conn.commit()
-                        print('inserted successfully')
-                    except Exception as e:
-                        print(e)
-                self.update.emit(response)
-            except queue.Empty:
-                pass
+            message = await asyncio.get_event_loop().run_in_executor(self.executor, self._ext_get_message)
+            if message == 'DC':
+                await self.connection.session.close()
+                return
+            print(message)
+            response = await self.connection.ws_writer(message)
+            print(response['raw_data'])
+            print(response['raw_request'])
+            if response['transaction_id'] >= 128:
+                try:
+                    self.db.execute('''INSERT INTO response_history 
+                                    VALUES (?, ?, ?, ?, ?);''',
+                                    (datetime.now(), response['transaction_id'], response['unit_address'],
+                                     response['function_code'], response['raw_data']))
+                    self.db_conn.commit()
+                    self.db.execute('''INSERT INTO request_history
+                                    VALUES (?, ?, ?, ?, ?);''',
+                                    (datetime.now(), response['transaction_id'], response['unit_address'],
+                                     response['function_code'], response['raw_request']))
+                    self.db_conn.commit()
+                    print('inserted successfully')
+                except Exception as e:
+                    print(e)
+            self.update.emit(response)
 
     async def counter(self):
         while True:
@@ -79,3 +79,6 @@ class StateManager(QObject):
                 await asyncio.sleep(0.03)
                 self.update_counter.emit(i)
             self.update_view.emit()
+
+    def _ext_get_message(self):
+        return self.req_queue.get()
