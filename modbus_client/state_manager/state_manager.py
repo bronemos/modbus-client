@@ -13,7 +13,7 @@ from modbus_client.communication.connection import Connection
 class StateManager(QObject):
     update = Signal(dict)
     current_state = dict()
-    update_counter = Signal()
+    update_counter = Signal(int)
     update_view = Signal()
 
     def __init__(self):
@@ -38,7 +38,7 @@ class StateManager(QObject):
         writer_future = asyncio.ensure_future(self.write_loop())
         reader_future = asyncio.ensure_future(self.connection.ws_reader())
         counter_future = asyncio.ensure_future(self.counter())
-        await asyncio.wait([writer_future, reader_future, counter_future], return_when=asyncio.FIRST_COMPLETED)
+        await asyncio.wait([counter_future], return_when=asyncio.FIRST_COMPLETED)
         counter_future.cancel()
         writer_future.cancel()
         reader_future.cancel()

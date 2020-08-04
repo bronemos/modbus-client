@@ -2,7 +2,6 @@ from modbus_client.gui.style.custom_elements import *
 from modbus_client.gui.widgets import *
 from modbus_client.gui.widgets import RequestWidget
 from modbus_client.resources.codes import Codes
-from time import sleep
 
 
 class Application(QMainWindow):
@@ -64,7 +63,7 @@ class Application(QMainWindow):
         self.historianWidget.setPalette(p)
         self.liveViewWidget = LiveViewWidget(self.state_manager.req_queue)
         self.state_manager.update_counter.connect(self.liveViewWidget.progressBar.setValue)
-        self.state_manager.update_view.connect(self.liveViewWidget.update_view)
+        self.state_manager.update_view.connect(self.liveViewWidget.update_view_request)
         p = self.liveViewWidget.palette()
         p.setColor(self.liveViewWidget.backgroundRole(), Qt.white)
         self.liveViewWidget.setPalette(p)
