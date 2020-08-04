@@ -176,6 +176,8 @@ class Application(QMainWindow):
 
     def closeEvent(self, event):
         super(Application, self).closeEvent(event)
+        self.liveViewWidget.close()
+        self.historianWidget.close()
         self.state_manager.req_queue.put('DC')
         event.accept()
 
