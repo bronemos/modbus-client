@@ -174,6 +174,11 @@ class Application(QMainWindow):
         else:
             self.liveViewWidget.update_view(message)
 
+    def closeEvent(self, event):
+        super(Application, self).closeEvent(event)
+        self.state_manager.req_queue.put('DC')
+        event.accept()
+
 
 def run_gui(state_manager):
     app = QApplication()
