@@ -9,7 +9,7 @@ class Counter(QThread):
 
     def run(self):
         cnt = 0
-        while cnt < 100 and not QThread.isInterruptionRequested(self):
+        while not QThread.isInterruptionRequested(self):
             cnt += 1
             sleep(0.03)
             if cnt == 100:

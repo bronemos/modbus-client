@@ -21,7 +21,9 @@ class Application(QMainWindow):
         self.HomeWidget = HomeWidget()
         self.HomeWidget.connect_button.clicked.connect(self._connect_disconnect)
         self.HomeWidget.historian_button.clicked.connect(self._switch_to_historian)
+        self.HomeWidget.historian_popup.clicked.connect(self._switch_to_historian_popup)
         self.HomeWidget.live_button.clicked.connect(self._switch_to_live)
+        self.HomeWidget.live_popup.clicked.connect(self._switch_to_live_popup)
 
         layout = QVBoxLayout()
         layout.addWidget(self.HomeWidget)
@@ -43,11 +45,6 @@ class Application(QMainWindow):
 
         self.responseLogWidget = ResponseLogWidget()
 
-        self.mainScrollWidget = QScrollArea()
-        self.mainScrollWidget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.mainScrollWidget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.mainScrollWidget.setWidgetResizable(True)
-
         self.reqresWidget = QWidget()
         reqresLayout = QGridLayout()
         reqresLayout.setRowStretch(0, 1)
@@ -62,15 +59,21 @@ class Application(QMainWindow):
         reqresLayout.addWidget(self.responseLogWidget, 1, 1, -1, -1)
         self.reqresWidget.setLayout(reqresLayout)
 
-        self.mainScrollWidget.setWidget(self.reqresWidget)
         self.historianWidget = HistorianWidget()
+        p = self.historianWidget.palette()
+        p.setColor(self.historianWidget.backgroundRole(), Qt.white)
+        self.historianWidget.setPalette(p)
         self.liveViewWidget = LiveViewWidget(self.state_manager.req_queue)
+        p = self.liveViewWidget.palette()
+        p.setColor(self.liveViewWidget.backgroundRole(), Qt.white)
+        self.liveViewWidget.setPalette(p)
         self.liveViewWidget.setEnabled(self.connected)
 
         self.centerWidget = QStackedWidget()
-        self.centerWidget.addWidget(self.mainScrollWidget)
+        self.centerWidget.addWidget(self.reqresWidget)
         self.centerWidget.addWidget(self.historianWidget)
         self.centerWidget.addWidget(self.liveViewWidget)
+
 
         layout.addWidget(self.centerWidget)
 
@@ -93,15 +96,28 @@ class Application(QMainWindow):
     def _switch_to_historian(self):
         if self.centerWidget.currentWidget() != self.historianWidget:
             self.historianWidget.load(self.state_manager.db)
+            self.centerWidget.addWidget(self.historianWidget)
             self.centerWidget.setCurrentWidget(self.historianWidget)
         else:
-            self.centerWidget.setCurrentWidget(self.mainScrollWidget)
+            self.centerWidget.setCurrentWidget(self.reqresWidget)
 
     def _switch_to_live(self):
         if self.centerWidget.currentWidget() != self.liveViewWidget:
+            self.centerWidget.addWidget(self.liveViewWidget)
             self.centerWidget.setCurrentWidget(self.liveViewWidget)
         else:
-            self.centerWidget.setCurrentWidget(self.mainScrollWidget)
+            self.centerWidget.setCurrentWidget(self.reqresWidget)
+
+    def _switch_to_live_popup(self):
+        self.centerWidget.setCurrentWidget(self.reqresWidget)
+        self.liveViewWidget.setParent(None)
+        self.liveViewWidget.show()
+
+    def _switch_to_historian_popup(self):
+        self.centerWidget.setCurrentWidget(self.reqresWidget)
+        self.historianWidget.load(self.state_manager.db)
+        self.historianWidget.setParent(None)
+        self.historianWidget.show()
 
     def _validate_and_queue(self):
 
@@ -140,7 +156,8 @@ class Application(QMainWindow):
             elif message == 1000:
                 ErrorDialog(self, 'Cannot connect to the device!')
             return
-        elif message['transaction_id'] >= self.transaction_id - 1:
+        elif message['transaction_id'] >= 128:
+            print("abcd")
             self.requestLogWidget.update_log(message)
             self.responseLogWidget.update_log(message)
             if message['function_code'] <= 4:
