@@ -2,8 +2,6 @@ from modbus_client.resources.codes import Codes
 
 protocol_code = '0000'
 
-response_first_address = 0
-
 
 def deserialize_message(message):
     if type(message) == bytes:
@@ -15,19 +13,13 @@ def deserialize_message(message):
         raw_data = message[8:]
         print('msg hex: ', message_hex)
         if function_code == Codes.READ_COILS.value or function_code == Codes.READ_DISCRETE_INPUTS.value:
-            set_list = list()
-            statuses = ''.join([z[::-1] for z in
-                                ['{:08b}'.format(int((x + y), 16)) for x, y in
-                                 zip(message_hex[::2], message_hex[1::2])]])
-            print(statuses)
-            for no, status in enumerate(statuses):
-                if status == '1':
-                    set_list.append(str(no + response_first_address))
-            print(f'coil status: {statuses}, {len(statuses)}')
+            status_list = [int(x) for x in ''.join([z[::-1] for z in
+                                                    ['{:08b}'.format(int((x + y), 16)) for x, y in
+                                                     zip(message_hex[::2], message_hex[1::2])]])]
             return {'transaction_id': transaction_id,
                     'unit_address': unit_address,
                     'function_code': function_code,
-                    'set_list': set_list,
+                    'status_list': status_list,
                     'raw_data': raw_data}
         elif function_code == Codes.READ_HOLDING_REGISTERS.value or function_code == Codes.READ_INPUT_REGISTERS.value:
             data_list = list()
@@ -51,9 +43,7 @@ def deserialize_message(message):
 
 
 def serialize_message(message):
-    global response_first_address
     function_code = message['function_code']
-    response_first_address = message['address']
     unit_address_hex = '{:02x}'.format(message['unit_address'])
     function_code_hex = '{:02x}'.format(function_code)
     transaction_id_hex = '{:04x}'.format(message['transaction_id'])

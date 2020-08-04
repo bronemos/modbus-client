@@ -147,11 +147,11 @@ class Application(QMainWindow):
                 current_selection = getattr(Codes, self.reqWidget.dropdown.currentText().replace(' ', '_')).value
                 if current_selection == 1:
                     self.res_message.setText(
-                        f"Coils set are: {','.join(message['set_list'])}" if len(message['set_list'])
+                        f"Coils set are: {','.join(message['status_list'])}" if len(message['status_list'])
                         else 'No coils are set')
                 elif current_selection == 2:
                     self.res_message.setText(
-                        f"Discrete inputs status: {','.join(message['set_list'])}" if len(message['set_list'])
+                        f"Discrete inputs status: {','.join(message['status_list'])}" if len(message['status_list'])
                         else 'No discrete inputs are set.')
                 elif current_selection == 3:
                     self.res_message.setText(f"Holding registers data: {','.join(message['register_data'])}")

@@ -26,13 +26,13 @@ class LiveResponseWidget(QWidget):
         self.table.setRowCount(0)
         if message['function_code'] == Codes.READ_COILS.value or \
                 message['function_code'] == Codes.READ_DISCRETE_INPUTS.value:
-            for no, coil in enumerate(message['set_list']):
+            for no, coil in enumerate(message['status_list'][:message['count']]):
                 self.table.insertRow(curr := self.table.rowCount())
-                self.table.setItem(curr, 0, QTableWidgetItem(str(no)))
-                self.table.setItem(curr, 1, QTableWidgetItem(coil))
+                self.table.setItem(curr, 0, QTableWidgetItem(str(no + message['address'])))
+                self.table.setItem(curr, 1, QTableWidgetItem(str(coil)))
         elif message['function_code'] == Codes.READ_HOLDING_REGISTERS.value or \
                 message['function_code'] == Codes.READ_INPUT_REGISTERS.value:
             for no, data in enumerate(message['register_data']):
                 self.table.insertRow(curr := self.table.rowCount())
-                self.table.setItem(curr, 0, QTableWidgetItem(str(no)))
+                self.table.setItem(curr, 0, QTableWidgetItem(str(no + message['address'])))
                 self.table.setItem(curr, 1, QTableWidgetItem(data))

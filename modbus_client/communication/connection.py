@@ -27,6 +27,8 @@ class Connection:
         await self.ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
+        response_dict['address'] = message['address']
+        response_dict['count'] = message['count']
         return response_dict
 
     async def ws_reader(self):
