@@ -1,3 +1,5 @@
+import math
+
 from modbus_client.resources.codes import Codes
 
 protocol_code = '0000'
@@ -103,7 +105,7 @@ def serialize_message(message):
                 + data_hex)
     elif function_code == 16:
         first_address_hex = '{:04x}'.format(message['address'])
-        length_hex = '{:04x}'.format((1 + 1 + 2 + 2 + 1 + 2 * len(message['data'])))
+        length_hex = '{:04x}'.format(1 + 1 + 2 + 2 + 1 + 2 * len(message['data']))
         data_hex = ''.join(['{:04x}'.format(x) for x in message['data']])
         register_count_hex = '{:04x}'.format(len(message['data']))
         byte_count_hex = '{:02x}'.format(2 * len(message['data']))
@@ -123,5 +125,21 @@ def serialize_message(message):
                 + function_code_hex
                 + first_address_hex
                 + register_count_hex
+                + byte_count_hex
+                + data_hex)
+    elif function_code == 15:
+        first_address_hex = '{:04x}'.format(message['address'])
+        length_hex = '{:04x}'.format(1 + 1 + 2 + 2 + 1 + math.ceil(len(message['data']) / 8))
+        data_hex = ''.join(['{:02x}'.format(int(''.join(z), 2)) for z in
+                            [x[::-1] for x in [message['data'][i:i + 8] for i in range(0, len(message['data']), 8)]]])
+        coil_count_hex = '{:04x}'.format(len(message['data']))
+        byte_count_hex = '{:02x}'.format(math.ceil(len(message['data'])/8))
+        return (transaction_id_hex
+                + protocol_code
+                + length_hex
+                + unit_address_hex
+                + function_code_hex
+                + first_address_hex
+                + coil_count_hex
                 + byte_count_hex
                 + data_hex)

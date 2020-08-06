@@ -2,6 +2,7 @@ from PySide2.QtWidgets import QPushButton
 
 from modbus_client.gui.style.custom_elements import ErrorDialog
 from modbus_client.gui.widgets.write_widgets.default_write_widget import DefaultWWidget
+from modbus_client.resources.codes import Codes
 
 
 class WriteMultipleCoilsWidget(DefaultWWidget):
@@ -33,7 +34,11 @@ class WriteMultipleCoilsWidget(DefaultWWidget):
             return False
 
         try:
-            self.data_list = [int(x) for x in self.data_list]
+            for x in self.data_list:
+                if x not in ('0', '1'):
+                    ErrorDialog(window, 'Invalid data type detected in CSV.\n'
+                                        'All values must be either 0 or 1.')
+                    return False
         except ValueError:
             ErrorDialog(window, 'Invalid data type detected in CSV.\n'
                                 'All data types must be integers.')
@@ -45,6 +50,9 @@ class WriteMultipleCoilsWidget(DefaultWWidget):
 
         return True
 
-    def generate_message(self):
-        # todo add generate message
-        pass
+    def generate_message(self, transaction_id):
+        return {'transaction_id': transaction_id,
+                'unit_address': int(self.unitAddress.text()),
+                'address': int(self.firstAddress.text()),
+                'data': self.data_list,
+                'function_code': Codes.WRITE_MULTIPLE_COILS.value}

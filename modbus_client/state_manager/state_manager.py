@@ -17,8 +17,9 @@ class StateManager(QObject):
     update_view = Signal()
     transaction_id = 128
 
-    def __init__(self):
+    def __init__(self, refresh_time=3):
         super(StateManager, self).__init__()
+        self.refresh_time = refresh_time
         self.req_queue = Queue()
         self.backend = Backend()
 
@@ -68,7 +69,7 @@ class StateManager(QObject):
         while True:
             self.update_view.emit()
             for i in range(1, 101):
-                await asyncio.sleep(0.03)
+                await asyncio.sleep(self.refresh_time / 100)
                 if not self.disconnecting:
                     self.update_counter.emit(i)
 
