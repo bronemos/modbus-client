@@ -10,6 +10,7 @@ class LiveResponseWidget(QWidget):
         super(LiveResponseWidget, self).__init__()
         layout = QVBoxLayout()
         self.table = QTableWidget()
+        self.table.setSortingEnabled(True)
         self.table.verticalHeader().hide()
         self.table.setItemDelegate(CenterDelegate())
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -24,6 +25,7 @@ class LiveResponseWidget(QWidget):
 
     def refresh(self, message):
         self.table.setRowCount(0)
+        self.table.setSortingEnabled(False)
         if message['function_code'] == Codes.READ_COILS.value or \
                 message['function_code'] == Codes.READ_DISCRETE_INPUTS.value:
             for no, coil in enumerate(message['status_list'][:message['count']]):
@@ -36,3 +38,4 @@ class LiveResponseWidget(QWidget):
                 self.table.insertRow(curr := self.table.rowCount())
                 self.table.setItem(curr, 0, QTableWidgetItem(str(no + message['address'])))
                 self.table.setItem(curr, 1, QTableWidgetItem(data))
+        self.table.setSortingEnabled(True)

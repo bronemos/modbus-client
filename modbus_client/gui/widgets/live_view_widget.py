@@ -76,13 +76,13 @@ class LiveViewWidget(QGroupBox):
         self.setLayout(layout)
 
     def update_view_request(self):
-        if self.ReadCoilsWidget.validate_input(self) and \
-                self.ReadDiscreteInputsWidget.validate_input(self) and \
-                self.ReadHoldingRegistersWidget.validate_input(self) and \
-                self.ReadInputRegistersWidget.validate_input(self):
+        if self.ReadCoilsWidget.validate_input(self):
             self.req_queue.put(self.ReadCoilsWidget.generate_message(0))
+        if self.ReadDiscreteInputsWidget.validate_input(self):
             self.req_queue.put(self.ReadDiscreteInputsWidget.generate_message(1))
+        if self.ReadHoldingRegistersWidget.validate_input(self):
             self.req_queue.put(self.ReadHoldingRegistersWidget.generate_message(2))
+        if self.ReadInputRegistersWidget.validate_input(self):
             self.req_queue.put(self.ReadInputRegistersWidget.generate_message(3))
 
     def update_view(self, message):
@@ -94,5 +94,3 @@ class LiveViewWidget(QGroupBox):
             self.ReadHoldingRegistersResponse.refresh(message)
         else:
             self.ReadInputRegistersResponse.refresh(message)
-
-

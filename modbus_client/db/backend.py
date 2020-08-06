@@ -5,7 +5,7 @@ from datetime import datetime
 class Backend:
 
     def __init__(self):
-        self.conn = sqlite3.connect('historian.db', check_same_thread=False)
+        self.conn = sqlite3.connect('./db/historian.db', check_same_thread=False)
         self.cursor = self.conn.cursor()
         self.conn.execute('''CREATE TABLE IF NOT EXISTS request_history (
                       transaction_timestamp TIMESTAMP,

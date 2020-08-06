@@ -6,4 +6,5 @@ from modbus_client.gui.widgets.log_widgets.request_log_widget import RequestLogW
 from modbus_client.gui.widgets.log_widgets.response_log_widget import ResponseLogWidget
 from modbus_client.gui.widgets.read_widgets import *
 from modbus_client.gui.widgets.request_widget import RequestWidget
+from modbus_client.gui.widgets.response_widget import ResponseWidget
 from modbus_client.gui.widgets.write_widgets import *

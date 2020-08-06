@@ -13,6 +13,7 @@ class RequestLogWidget(QGroupBox):
         self.setAlignment(Qt.AlignCenter)
 
         self.table = QTableWidget()
+        self.table.setSortingEnabled(True)
         self.table.verticalHeader().hide()
         self.table.setItemDelegate(CenterDelegate())
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -28,10 +29,11 @@ class RequestLogWidget(QGroupBox):
         self.setLayout(layout)
 
     def update_log(self, transaction: dict):
+        self.table.setSortingEnabled(False)
         self.table.insertRow(0)
         self.table.setItem(0, 0, QTableWidgetItem(datetime.now().strftime('%H:%M:%S')))
         self.table.setItem(0, 1, QTableWidgetItem(str(transaction.get('transaction_id', '-'))))
         self.table.setItem(0, 2, QTableWidgetItem(str(transaction.get('unit_address', '-'))))
         self.table.setItem(0, 3, QTableWidgetItem(str(transaction.get('function_code', '-'))))
         self.table.setItem(0, 4, QTableWidgetItem(str(transaction.get('raw_request', '-'))))
-
+        self.table.setSortingEnabled(True)

@@ -1,7 +1,6 @@
 from modbus_client.gui.style.custom_elements import *
 from modbus_client.gui.widgets import *
 from modbus_client.gui.widgets import RequestWidget
-from modbus_client.resources.codes import Codes
 
 
 class Application(QMainWindow):
@@ -29,14 +28,8 @@ class Application(QMainWindow):
         self.reqWidget.setEnabled(self.connected)
         self.reqWidget.sendButton.clicked.connect(self._validate_and_queue)
 
-        self.resWidget = QGroupBox('RESPONSE')
+        self.resWidget = ResponseWidget()
         self.resWidget.setEnabled(self.connected)
-        self.res_message = QLabel()
-        self.res_message.setAlignment(Qt.AlignCenter)
-        reslayout = QVBoxLayout()
-        reslayout.addWidget(self.res_message)
-        self.resWidget.setAlignment(Qt.AlignCenter)
-        self.resWidget.setLayout(reslayout)
 
         self.requestLogWidget = RequestLogWidget()
 
@@ -158,20 +151,7 @@ class Application(QMainWindow):
             print("abcd")
             self.requestLogWidget.update_log(message)
             self.responseLogWidget.update_log(message)
-            if message['function_code'] <= 4:
-                current_selection = getattr(Codes, self.reqWidget.dropdown.currentText().replace(' ', '_')).value
-                if current_selection == 1:
-                    self.res_message.setText(
-                        f"Coils set are: {','.join(message['status_list'])}" if len(message['status_list'])
-                        else 'No coils are set')
-                elif current_selection == 2:
-                    self.res_message.setText(
-                        f"Discrete inputs status: {','.join(message['status_list'])}" if len(message['status_list'])
-                        else 'No discrete inputs are set.')
-                elif current_selection == 3:
-                    self.res_message.setText(f"Holding registers data: {','.join(message['register_data'])}")
-                elif current_selection == 4:
-                    self.res_message.setText(f"Input registers data: {','.join(message['register_data'])}")
+            self.resWidget.update_response(message)
         else:
             self.liveViewWidget.update_view(message)
 
