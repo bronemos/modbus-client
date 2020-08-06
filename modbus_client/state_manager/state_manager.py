@@ -1,15 +1,12 @@
 import asyncio
-import queue
-import sqlite3
-from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 from threading import Thread
 
 from PySide2.QtCore import QObject, Signal
 
 from modbus_client.communication.connection import Connection
-
-from concurrent.futures import ThreadPoolExecutor
+from modbus_client.db.backend import Backend
 
 
 class StateManager(QObject):
@@ -18,12 +15,12 @@ class StateManager(QObject):
     current_state = dict()
     update_counter = Signal(int)
     update_view = Signal()
+    transaction_id = 128
 
     def __init__(self):
         super(StateManager, self).__init__()
         self.req_queue = Queue()
-        self.db_conn = sqlite3.connect('./db/historian.db', check_same_thread=False)
-        self.db = self.db_conn.cursor()
+        self.backend = Backend()
 
     def run_loop(self):
         self.disconnecting = False
@@ -61,17 +58,8 @@ class StateManager(QObject):
             print(response['raw_request'])
             if response['transaction_id'] >= 128:
                 try:
-                    self.db.execute('''INSERT INTO response_history 
-                                    VALUES (?, ?, ?, ?, ?);''',
-                                    (datetime.now(), response['transaction_id'], response['unit_address'],
-                                     response['function_code'], response['raw_data']))
-                    self.db_conn.commit()
-                    self.db.execute('''INSERT INTO request_history
-                                    VALUES (?, ?, ?, ?, ?);''',
-                                    (datetime.now(), response['transaction_id'], response['unit_address'],
-                                     response['function_code'], response['raw_request']))
-                    self.db_conn.commit()
-                    print('inserted successfully')
+                    self.backend.insert_request_history(response)
+                    self.backend.insert_response_history(response)
                 except Exception as e:
                     print(e)
             self.update.emit(response)
@@ -86,3 +74,7 @@ class StateManager(QObject):
 
     def _ext_get_message(self):
         return self.req_queue.get()
+
+    def get_current_transaction_id(self):
+        self.transaction_id = self.transaction_id + 1
+        return self.transaction_id - 1

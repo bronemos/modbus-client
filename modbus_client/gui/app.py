@@ -6,7 +6,6 @@ from modbus_client.resources.codes import Codes
 
 class Application(QMainWindow):
     connected = False
-    transaction_id = 128
 
     def __init__(self, state_manager, parent=None):
         QMainWindow.__init__(self, parent)
@@ -94,7 +93,7 @@ class Application(QMainWindow):
 
     def _switch_to_historian(self):
         if self.centerWidget.currentWidget() != self.historianWidget:
-            self.historianWidget.load(self.state_manager.db)
+            self.historianWidget.load(self.state_manager.backend)
             self.centerWidget.addWidget(self.historianWidget)
             self.centerWidget.setCurrentWidget(self.historianWidget)
         else:
@@ -116,7 +115,7 @@ class Application(QMainWindow):
     def _switch_to_historian_popup(self):
         if self.centerWidget.currentWidget() == self.historianWidget:
             self.centerWidget.setCurrentWidget(self.reqresWidget)
-        self.historianWidget.load(self.state_manager.db)
+        self.historianWidget.load(self.state_manager.backend)
         self.historianWidget.setParent(None)
         self.historianWidget.show()
 
@@ -125,10 +124,10 @@ class Application(QMainWindow):
         if not self.reqWidget.stackedRequestWidget.currentWidget().validate_input(self):
             return
 
-        message = self.reqWidget.stackedRequestWidget.currentWidget().generate_message(self.transaction_id)
+        message = self.reqWidget.stackedRequestWidget.currentWidget().generate_message(
+            self.state_manager.get_current_transaction_id())
 
         print(message)
-        self.transaction_id += 1
         self.state_manager.req_queue.put(message)
 
     def update_gui(self, message):
