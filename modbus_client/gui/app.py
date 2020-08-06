@@ -104,6 +104,7 @@ class Application(QMainWindow):
             self.centerWidget.setCurrentWidget(self.reqresWidget)
         self.liveViewWidget.setParent(None)
         self.liveViewWidget.show()
+        self.liveViewWidget.ReadCoilsResponse.setFocus()
 
     def _switch_to_historian_popup(self):
         if self.centerWidget.currentWidget() == self.historianWidget:
