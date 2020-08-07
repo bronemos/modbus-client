@@ -7,6 +7,7 @@ from PySide2.QtCore import QObject, Signal
 
 from modbus_client.communication.connection import Connection
 from modbus_client.db.backend import Backend
+from modbus_client.resources.codes import Codes
 
 
 class StateManager(QObject):
@@ -53,8 +54,41 @@ class StateManager(QObject):
                 self.update_counter.emit(0)
                 await self.connection.session.close()
                 return
-            print(message)
-            response = await self.connection.ws_writer(message)
+
+            if message['function_code'] == Codes.READ_COILS.value:
+                response = await self.connection.read_coils(message.get('transaction_id', self.transaction_id),
+                                                            message['unit_address'],
+                                                            message['address'], message['count'])
+
+            elif message['function_code'] == Codes.READ_DISCRETE_INPUTS.value:
+                response = await self.connection.read_discrete_inputs(
+                    message.get('transaction_id', self.transaction_id), message['unit_address'],
+                    message['address'], message['count'])
+
+            elif message['function_code'] == Codes.READ_HOLDING_REGISTERS.value:
+                response = await self.connection.read_holding_registers(
+                    message.get('transaction_id', self.transaction_id), message['unit_address'],
+                    message['address'], message['count'])
+
+            elif message['function_code'] == Codes.READ_INPUT_REGISTERS.value:
+                response = await self.connection.read_input_registers(
+                    message.get('transaction_id', self.transaction_id), message['unit_address'],
+                    message['address'], message['count'])
+
+            elif message['function_code'] == Codes.WRITE_SINGLE_COIL.value:
+                response = await self.connection.write_single_coil(self.transaction_id, message['unit_address'],
+                                                                   message['address'], message['status'])
+
+            elif message['function_code'] == Codes.WRITE_SINGLE_REGISTER.value:
+                response = await self.connection.write_single_register(self.transaction_id, message['unit_address'],
+                                                                       message['address'], message['data'])
+
+            elif message['function_code'] == Codes.WRITE_MULTIPLE_COILS.value:
+                response = await self.connection.write_multiple_coils()
+
+            elif message['function_code'] == Codes.WRITE_MULTIPLE_REGISTERS.value:
+                response = await self.connection.write_multiple_registers()
+
             print(response['raw_data'])
             print(response['raw_request'])
             if response['transaction_id'] >= 128:

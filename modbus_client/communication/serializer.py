@@ -133,7 +133,7 @@ def serialize_message(message):
         data_hex = ''.join(['{:02x}'.format(int(''.join(z), 2)) for z in
                             [x[::-1] for x in [message['data'][i:i + 8] for i in range(0, len(message['data']), 8)]]])
         coil_count_hex = '{:04x}'.format(len(message['data']))
-        byte_count_hex = '{:02x}'.format(math.ceil(len(message['data'])/8))
+        byte_count_hex = '{:02x}'.format(math.ceil(len(message['data']) / 8))
         return (transaction_id_hex
                 + protocol_code
                 + length_hex
@@ -143,3 +143,124 @@ def serialize_message(message):
                 + coil_count_hex
                 + byte_count_hex
                 + data_hex)
+
+
+def serialize_read(function_code, transaction_id, unit_address, first_address, count):
+    unit_address_hex = '{:02x}'.format(unit_address)
+    function_code_hex = '{:02x}'.format(function_code)
+    transaction_id_hex = '{:04x}'.format(transaction_id)
+    first_address_hex = '{:04x}'.format(first_address)
+    count_hex = '{:04x}'.format(count)
+    length_hex = '0006'
+    return (transaction_id_hex
+            + protocol_code
+            + length_hex
+            + unit_address_hex
+            + function_code_hex
+            + first_address_hex
+            + count_hex)
+
+
+def deserialize_read_coils():
+    pass
+
+
+def deserialize_read_discrete_inputs():
+    pass
+
+
+def deserialize_read_holding_registers():
+    pass
+
+
+def deserialize_read_input_registers():
+    pass
+
+
+def serialize_write_single_coil(transaction_id, unit_address, address, status):
+    unit_address_hex = '{:02x}'.format(unit_address)
+    function_code_hex = '{:02x}'.format(Codes.WRITE_SINGLE_COIL.value)
+    transaction_id_hex = '{:04x}'.format(transaction_id)
+    address_hex = '{:04x}'.format(address)
+    status_hex = 'FF00' if status else '0000'
+    length_hex = '0006'
+    return (transaction_id_hex
+            + protocol_code
+            + length_hex
+            + unit_address_hex
+            + function_code_hex
+            + address_hex
+            + status_hex)
+
+
+def deserialize_write_single_coil():
+    pass
+
+
+def serialize_write_single_register(transaction_id, unit_address, address, data):
+    unit_address_hex = '{:02x}'.format(unit_address)
+    function_code_hex = '{:02x}'.format(Codes.WRITE_SINGLE_REGISTER.value)
+    transaction_id_hex = '{:04x}'.format(transaction_id)
+    address_hex = '{:04x}'.format(address)
+    data_hex = '{:04x}'.format(data)
+    length_hex = '0006'
+    return (transaction_id_hex
+            + protocol_code
+            + length_hex
+            + unit_address_hex
+            + function_code_hex
+            + address_hex
+            + data_hex)
+
+
+def deserialize_write_single_register():
+    pass
+
+
+def serialize_write_multiple_coils(transaction_id, unit_address, first_address, data):
+    unit_address_hex = '{:02x}'.format(unit_address)
+    function_code_hex = '{:02x}'.format(Codes.WRITE_MULTIPLE_REGISTERS.value)
+    transaction_id_hex = '{:04x}'.format(transaction_id)
+    first_address_hex = '{:04x}'.format(first_address)
+    length_hex = '{:04x}'.format(1 + 1 + 2 + 2 + 1 + math.ceil(len(data) / 8))
+    data_hex = ''.join(['{:02x}'.format(int(''.join(z), 2)) for z in
+                        [x[::-1] for x in [data[i:i + 8] for i in range(0, len(data), 8)]]])
+    coil_count_hex = '{:04x}'.format(len(data))
+    byte_count_hex = '{:02x}'.format(math.ceil(len(data) / 8))
+    return (transaction_id_hex
+            + protocol_code
+            + length_hex
+            + unit_address_hex
+            + function_code_hex
+            + first_address_hex
+            + coil_count_hex
+            + byte_count_hex
+            + data_hex)
+
+
+def deserialize_write_multiple_coils():
+    pass
+
+
+def serialize_write_multiple_register(transaction_id, unit_address, first_address, data):
+    unit_address_hex = '{:02x}'.format(unit_address)
+    function_code_hex = '{:02x}'.format(Codes.WRITE_MULTIPLE_REGISTERS.value)
+    transaction_id_hex = '{:04x}'.format(transaction_id)
+    first_address_hex = '{:04x}'.format(first_address)
+    length_hex = '{:04x}'.format(1 + 1 + 2 + 2 + 1 + 2 * len(data))
+    data_hex = ''.join(['{:04x}'.format(x) for x in data])
+    register_count_hex = '{:04x}'.format(len(data))
+    byte_count_hex = '{:02x}'.format(2 * len(data))
+    return (transaction_id_hex
+            + protocol_code
+            + length_hex
+            + unit_address_hex
+            + function_code_hex
+            + first_address_hex
+            + register_count_hex
+            + byte_count_hex
+            + data_hex)
+
+
+def deserialize_write_multiple_register():
+    pass
