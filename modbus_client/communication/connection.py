@@ -51,7 +51,6 @@ class Connection:
         pending_response = asyncio.Future()
         self._pending_responses[transaction_id] = pending_response
         serialized_message = serializer.serialize_write_single_coil(transaction_id, unit_address, first_address, status)
-        print(serialized_message)
         await self.ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
@@ -62,7 +61,6 @@ class Connection:
         pending_response = asyncio.Future()
         self._pending_responses[transaction_id] = pending_response
         serialized_message = serializer.serialize_write_single_register(transaction_id, unit_address, address, data)
-        print(serialized_message)
         await self.ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
@@ -85,7 +83,6 @@ class Connection:
         self._pending_responses[transaction_id] = pending_response
         serialized_message = serializer.serialize_write_multiple_coils(transaction_id, unit_address, first_address,
                                                                        data)
-        print(serialized_message)
         await self.ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
@@ -95,6 +92,5 @@ class Connection:
     async def ws_reader(self):
         while True:
             message = serializer.deserialize_message((await self.ws.receive()).data)
-            print('here')
             if type(message) != str:
                 self._pending_responses[message['transaction_id']].set_result(message)

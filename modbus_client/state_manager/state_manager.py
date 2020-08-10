@@ -91,8 +91,6 @@ class StateManager(QObject):
                 response = await self.connection.write_multiple_registers(self.transaction_id, message['unit_address'],
                                                                           message['address'], message['data'])
 
-            print(response['raw_data'])
-            print(response['raw_request'])
             if response['transaction_id'] >= 128:
                 try:
                     self.backend.insert_request_history(response)

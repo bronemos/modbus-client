@@ -121,11 +121,9 @@ class Application(QMainWindow):
         message = self.reqWidget.stackedRequestWidget.currentWidget().generate_message(
             self.state_manager.get_current_transaction_id())
 
-        print(message)
         self.state_manager.req_queue.put(message)
 
     def update_gui(self, message):
-        print('this is msg', message)
         if message == 'ACK':
             self.connected = True
             self.HomeWidget.connect_button.setEnabled(True)
@@ -149,7 +147,6 @@ class Application(QMainWindow):
                 ErrorDialog(self, 'Cannot connect to the device!')
             return
         elif message['transaction_id'] >= 128:
-            print("abcd")
             self.requestLogWidget.update_log(message)
             self.responseLogWidget.update_log(message)
             self.resWidget.update_response(message)

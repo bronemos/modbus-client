@@ -10,10 +10,8 @@ def deserialize_message(message):
         transaction_id = int(message[0:2].hex(), 16)
         unit_address = message[6]
         function_code = message[7]
-        print(f'function code:{function_code}')
         message_hex = message[9:].hex()
         raw_data = message[8:]
-        print('msg hex: ', message_hex)
         if function_code == Codes.READ_COILS.value or function_code == Codes.READ_DISCRETE_INPUTS.value:
             status_list = [int(x) for x in ''.join([z[::-1] for z in
                                                     ['{:08b}'.format(int((x + y), 16)) for x, y in
@@ -27,7 +25,6 @@ def deserialize_message(message):
             data_list = list()
             data_list.extend(
                 [str(int(''.join(message_hex[i:i + 4]), 16)) for i in range(0, len(message_hex), 4)])
-            print(data_list)
             return {'transaction_id': transaction_id,
                     'unit_address': unit_address,
                     'function_code': function_code,
@@ -150,15 +147,6 @@ def serialize_write_multiple_registers(transaction_id, unit_address, first_addre
     data_hex = ''.join(['{:04x}'.format(x) for x in data])
     register_count_hex = '{:04x}'.format(len(data))
     byte_count_hex = '{:02x}'.format(2 * len(data))
-    print(transaction_id_hex
-          + protocol_code
-          + length_hex
-          + unit_address_hex
-          + function_code_hex
-          + first_address_hex
-          + register_count_hex
-          + byte_count_hex
-          + data_hex)
     return (transaction_id_hex
             + protocol_code
             + length_hex
