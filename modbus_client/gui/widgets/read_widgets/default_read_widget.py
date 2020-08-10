@@ -3,7 +3,7 @@ from modbus_client.gui.style.custom_elements import *
 
 class DefaultRWidget(QWidget):
     address_constraint = (0, 65535)
-    unit_address_constraint = (1, 65535)
+    unit_address_constraint = (1, 255)
 
     def __init__(self):
         super(DefaultRWidget, self).__init__()
@@ -25,6 +25,7 @@ class DefaultRWidget(QWidget):
             ErrorDialog(window, f'Unit address out of bounds.\n'
                                 f'Has to be between {self.unit_address_constraint[0]} and '
                                 f'{self.unit_address_constraint[1]}')
+            return False
 
         try:
             curr_address = int(self.address.text())

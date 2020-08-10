@@ -84,10 +84,12 @@ class StateManager(QObject):
                                                                        message['address'], message['data'])
 
             elif message['function_code'] == Codes.WRITE_MULTIPLE_COILS.value:
-                response = await self.connection.write_multiple_coils()
+                response = await self.connection.write_multiple_coils(self.transaction_id, message['unit_address'],
+                                                                      message['address'], message['data'])
 
             elif message['function_code'] == Codes.WRITE_MULTIPLE_REGISTERS.value:
-                response = await self.connection.write_multiple_registers()
+                response = await self.connection.write_multiple_registers(self.transaction_id, message['unit_address'],
+                                                                          message['address'], message['data'])
 
             print(response['raw_data'])
             print(response['raw_request'])
@@ -101,7 +103,7 @@ class StateManager(QObject):
 
     async def counter(self):
         while True:
-            self.update_view.emit()
+            # self.update_view.emit()
             for i in range(1, 101):
                 await asyncio.sleep(self.refresh_time / 100)
                 if not self.disconnecting:

@@ -4,7 +4,7 @@ from modbus_client.gui.style.custom_elements import *
 
 
 class DefaultWWidget(QWidget):
-    unit_address_constraint = (1, 65535)
+    unit_address_constraint = (1, 255)
     address_constraint = (0, 65535)
     data_constraint = (0, 65535)
     data_list = list()
@@ -15,7 +15,8 @@ class DefaultWWidget(QWidget):
         self.layout = QFormLayout()
         self.firstAddress = ClickableLineEdit('0')
         self.unitAddress = ClickableLineEdit('1')
-        self.unitAddress.setToolTip('Unit address.\nValue between 1 and 65535')
+        self.unitAddress.setToolTip(
+            f'Unit address.\nValue between {self.unit_address_constraint[0]} and {self.unit_address_constraint[1]}')
         self.layout.addRow("Unit address: ", self.unitAddress)
 
     def import_csv(self):
@@ -40,3 +41,6 @@ class DefaultWWidget(QWidget):
             ErrorDialog(window, f'Unit address out of bounds.\n'
                                 f'Has to be between {self.unit_address_constraint[0]} and '
                                 f'{self.unit_address_constraint[1]}')
+            return False
+
+        return True

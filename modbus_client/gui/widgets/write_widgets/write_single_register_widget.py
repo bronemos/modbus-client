@@ -21,7 +21,8 @@ class WriteSingleRegisterWidget(DefaultWWidget):
         self.setLayout(self.layout)
 
     def validate_input(self, window):
-        self.validate_unit_address(window)
+        if not self.validate_unit_address(window):
+            return False
 
         try:
             curr_address = int(self.firstAddress.text())
