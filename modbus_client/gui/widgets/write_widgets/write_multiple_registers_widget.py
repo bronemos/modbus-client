@@ -48,9 +48,8 @@ class WriteMultipleRegistersWidget(DefaultWWidget):
 
         return True
 
-    def generate_message(self, transaction_id):
-        return {'transaction_id': transaction_id,
-                'unit_address': int(self.unitAddress.text()),
+    def generate_message(self):
+        return {'unit_address': int(self.unitAddress.text()),
                 'address': int(self.firstAddress.text()),
                 'data': self.data_list,
                 'function_code': Codes.WRITE_MULTIPLE_REGISTERS.value}

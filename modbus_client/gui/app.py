@@ -53,9 +53,10 @@ class Application(QMainWindow):
         p = self.historianWidget.palette()
         p.setColor(self.historianWidget.backgroundRole(), Qt.white)
         self.historianWidget.setPalette(p)
-        self.liveViewWidget = LiveViewWidget(self.state_manager.req_queue)
+        self.liveViewWidget = LiveViewWidget(self.state_manager.user_req_queue)
         self.state_manager.update_counter.connect(self.liveViewWidget.progressBar.setValue)
-        self.state_manager.update_view.connect(self.liveViewWidget.update_view_request)
+        self.state_manager.initiate_live_view_update.connect(self.liveViewWidget.update_view_request)
+        self.state_manager.update_view.connect(self.liveViewWidget.update_view)
         p = self.liveViewWidget.palette()
         p.setColor(self.liveViewWidget.backgroundRole(), Qt.white)
         self.liveViewWidget.setPalette(p)
@@ -81,7 +82,7 @@ class Application(QMainWindow):
             self.HomeWidget.indicator.setMovie(self.HomeWidget.connecting_movie)
             self.state_manager.run_loop()
         else:
-            self.state_manager.req_queue.put('DC')
+            self.state_manager.user_req_queue.put('DC')
             self.update_gui('DC')
 
     def _switch_to_historian(self):
@@ -118,10 +119,11 @@ class Application(QMainWindow):
         if not self.reqWidget.stackedRequestWidget.currentWidget().validate_input(self):
             return
 
-        message = self.reqWidget.stackedRequestWidget.currentWidget().generate_message(
-            self.state_manager.get_current_transaction_id())
+        message = self.reqWidget.stackedRequestWidget.currentWidget().generate_message()
 
-        self.state_manager.req_queue.put(message)
+        message['user_generated'] = True
+
+        self.state_manager.user_req_queue.put(message)
 
     def update_gui(self, message):
         if message == 'ACK':
@@ -146,18 +148,16 @@ class Application(QMainWindow):
             elif message == 1000:
                 ErrorDialog(self, 'Cannot connect to the device!')
             return
-        elif message['transaction_id'] >= 128:
+        else:
             self.requestLogWidget.update_log(message)
             self.responseLogWidget.update_log(message)
             self.resWidget.update_response(message)
-        else:
-            self.liveViewWidget.update_view(message)
 
     def closeEvent(self, event):
         super(Application, self).closeEvent(event)
         self.liveViewWidget.close()
         self.historianWidget.close()
-        self.state_manager.req_queue.put('DC')
+        self.state_manager.user_req_queue.put('DC')
         event.accept()
 
 

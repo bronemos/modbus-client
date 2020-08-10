@@ -15,13 +15,13 @@ class StateManager(QObject):
     update = Signal(dict)
     current_state = dict()
     update_counter = Signal(int)
-    update_view = Signal()
-    transaction_id = 128
+    initiate_live_view_update = Signal()
+    update_view = Signal(dict)
 
     def __init__(self, refresh_time=3):
         super(StateManager, self).__init__()
         self.refresh_time = refresh_time
-        self.req_queue = Queue()
+        self.user_req_queue = Queue()
         self.backend = Backend()
 
     def run_loop(self):
@@ -56,60 +56,54 @@ class StateManager(QObject):
                 return
 
             if message['function_code'] == Codes.READ_COILS.value:
-                response = await self.connection.read_coils(message.get('transaction_id', self.transaction_id),
-                                                            message['unit_address'],
+                response = await self.connection.read_coils(message['unit_address'],
                                                             message['address'], message['count'])
 
             elif message['function_code'] == Codes.READ_DISCRETE_INPUTS.value:
-                response = await self.connection.read_discrete_inputs(
-                    message.get('transaction_id', self.transaction_id), message['unit_address'],
-                    message['address'], message['count'])
+                response = await self.connection.read_discrete_inputs(message['unit_address'],
+                                                                      message['address'], message['count'])
 
             elif message['function_code'] == Codes.READ_HOLDING_REGISTERS.value:
-                response = await self.connection.read_holding_registers(
-                    message.get('transaction_id', self.transaction_id), message['unit_address'],
-                    message['address'], message['count'])
+                response = await self.connection.read_holding_registers(message['unit_address'],
+                                                                        message['address'], message['count'])
 
             elif message['function_code'] == Codes.READ_INPUT_REGISTERS.value:
-                response = await self.connection.read_input_registers(
-                    message.get('transaction_id', self.transaction_id), message['unit_address'],
-                    message['address'], message['count'])
+                response = await self.connection.read_input_registers(message['unit_address'],
+                                                                      message['address'], message['count'])
 
             elif message['function_code'] == Codes.WRITE_SINGLE_COIL.value:
-                response = await self.connection.write_single_coil(self.transaction_id, message['unit_address'],
+                response = await self.connection.write_single_coil(message['unit_address'],
                                                                    message['address'], message['status'])
 
             elif message['function_code'] == Codes.WRITE_SINGLE_REGISTER.value:
-                response = await self.connection.write_single_register(self.transaction_id, message['unit_address'],
+                response = await self.connection.write_single_register(message['unit_address'],
                                                                        message['address'], message['data'])
 
             elif message['function_code'] == Codes.WRITE_MULTIPLE_COILS.value:
-                response = await self.connection.write_multiple_coils(self.transaction_id, message['unit_address'],
+                response = await self.connection.write_multiple_coils(message['unit_address'],
                                                                       message['address'], message['data'])
 
             elif message['function_code'] == Codes.WRITE_MULTIPLE_REGISTERS.value:
-                response = await self.connection.write_multiple_registers(self.transaction_id, message['unit_address'],
+                response = await self.connection.write_multiple_registers(message['unit_address'],
                                                                           message['address'], message['data'])
 
-            if response['transaction_id'] >= 128:
+            if message['user_generated']:
                 try:
                     self.backend.insert_request_history(response)
                     self.backend.insert_response_history(response)
                 except Exception as e:
                     print(e)
-            self.update.emit(response)
+                self.update.emit(response)
+            else:
+                self.update_view.emit(response)
 
     async def counter(self):
         while True:
-            # self.update_view.emit()
+            self.initiate_live_view_update.emit()
             for i in range(1, 101):
                 await asyncio.sleep(self.refresh_time / 100)
                 if not self.disconnecting:
                     self.update_counter.emit(i)
 
     def _ext_get_message(self):
-        return self.req_queue.get()
-
-    def get_current_transaction_id(self):
-        self.transaction_id = self.transaction_id + 1
-        return self.transaction_id - 1
+        return self.user_req_queue.get()

@@ -50,9 +50,8 @@ class WriteSingleRegisterWidget(DefaultWWidget):
 
         return True
 
-    def generate_message(self, last_id):
-        return {'transaction_id': last_id,
-                'unit_address': int(self.unitAddress.text()),
+    def generate_message(self):
+        return {'unit_address': int(self.unitAddress.text()),
                 'address': int(self.firstAddress.text()),
                 'data': int(self.registerData.text()),
                 'function_code': Codes.WRITE_SINGLE_REGISTER.value}

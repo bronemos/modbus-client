@@ -3,6 +3,7 @@ from PySide2.QtWidgets import *
 
 from modbus_client.gui.widgets.live_response_widget import LiveResponseWidget
 from modbus_client.gui.widgets.read_widgets import *
+from modbus_client.resources.codes import Codes
 
 
 class LiveViewWidget(QGroupBox):
@@ -77,20 +78,28 @@ class LiveViewWidget(QGroupBox):
 
     def update_view_request(self):
         if self.ReadCoilsWidget.validate_input(self):
-            self.req_queue.put(self.ReadCoilsWidget.generate_message(0))
+            read_coils_message = self.ReadCoilsWidget.generate_message()
+            read_coils_message['user_generated'] = False
+            self.req_queue.put(read_coils_message)
         if self.ReadDiscreteInputsWidget.validate_input(self):
-            self.req_queue.put(self.ReadDiscreteInputsWidget.generate_message(1))
+            read_discrete_inputs_message = self.ReadDiscreteInputsWidget.generate_message()
+            read_discrete_inputs_message['user_generated'] = False
+            self.req_queue.put(read_discrete_inputs_message)
         if self.ReadHoldingRegistersWidget.validate_input(self):
-            self.req_queue.put(self.ReadHoldingRegistersWidget.generate_message(2))
+            read_holding_registers_message = self.ReadHoldingRegistersWidget.generate_message()
+            read_holding_registers_message['user_generated'] = False
+            self.req_queue.put(read_holding_registers_message)
         if self.ReadInputRegistersWidget.validate_input(self):
-            self.req_queue.put(self.ReadInputRegistersWidget.generate_message(3))
+            read_input_registers_message = self.ReadInputRegistersWidget.generate_message()
+            read_input_registers_message['user_generated'] = False
+            self.req_queue.put(read_input_registers_message)
 
     def update_view(self, message):
-        if message['transaction_id'] == 0:
+        if message['function_code'] == Codes.READ_COILS.value:
             self.ReadCoilsResponse.refresh(message)
-        elif message['transaction_id'] == 1:
+        elif message['function_code'] == Codes.READ_DISCRETE_INPUTS.value:
             self.ReadDiscreteInputsResponse.refresh(message)
-        elif message['transaction_id'] == 2:
+        elif message['function_code'] == Codes.READ_HOLDING_REGISTERS.value:
             self.ReadHoldingRegistersResponse.refresh(message)
         else:
             self.ReadInputRegistersResponse.refresh(message)

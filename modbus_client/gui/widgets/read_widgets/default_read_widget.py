@@ -53,10 +53,9 @@ class DefaultRWidget(QWidget):
 
         return True
 
-    def generate_message(self, transaction_id, function_code):
+    def generate_message(self, function_code):
 
-        return {'transaction_id': transaction_id,
-                'unit_address': int(self.unitAddress.text()),
+        return {'unit_address': int(self.unitAddress.text()),
                 'function_code': function_code,
                 'address': int(self.address.text()),
                 'count': int(self.count.text())}

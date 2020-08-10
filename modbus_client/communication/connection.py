@@ -13,6 +13,7 @@ conf = {
 
 class Connection:
     _pending_responses = dict()
+    transaction_id = 0
 
     async def connect(self):
         self.session = aiohttp.ClientSession()
@@ -30,63 +31,74 @@ class Connection:
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
         response_dict['address'] = first_address
         response_dict['count'] = count
+        self.transaction_id += 1
         return response_dict
 
-    async def read_coils(self, transaction_id, unit_address, first_address, count):
-        return await self.read_writer(Codes.READ_COILS.value, transaction_id, unit_address, first_address, count)
+    async def read_coils(self, unit_address, first_address, count):
+        return await self.read_writer(Codes.READ_COILS.value, self.transaction_id, unit_address, first_address, count)
 
-    async def read_discrete_inputs(self, transaction_id, unit_address, first_address, count):
-        return await self.read_writer(Codes.READ_DISCRETE_INPUTS.value, transaction_id, unit_address, first_address,
+    async def read_discrete_inputs(self, unit_address, first_address, count):
+        return await self.read_writer(Codes.READ_DISCRETE_INPUTS.value, self.transaction_id, unit_address,
+                                      first_address,
                                       count)
 
-    async def read_holding_registers(self, transaction_id, unit_address, first_address, count):
-        return await self.read_writer(Codes.READ_HOLDING_REGISTERS.value, transaction_id, unit_address, first_address,
+    async def read_holding_registers(self, unit_address, first_address, count):
+        return await self.read_writer(Codes.READ_HOLDING_REGISTERS.value, self.transaction_id, unit_address,
+                                      first_address,
                                       count)
 
-    async def read_input_registers(self, transaction_id, unit_address, first_address, count):
-        return await self.read_writer(Codes.READ_INPUT_REGISTERS.value, transaction_id, unit_address, first_address,
+    async def read_input_registers(self, unit_address, first_address, count):
+        return await self.read_writer(Codes.READ_INPUT_REGISTERS.value, self.transaction_id, unit_address,
+                                      first_address,
                                       count)
 
-    async def write_single_coil(self, transaction_id, unit_address, first_address, status):
+    async def write_single_coil(self, unit_address, first_address, status):
         pending_response = asyncio.Future()
-        self._pending_responses[transaction_id] = pending_response
-        serialized_message = serializer.serialize_write_single_coil(transaction_id, unit_address, first_address, status)
+        self._pending_responses[self.transaction_id] = pending_response
+        serialized_message = serializer.serialize_write_single_coil(self.transaction_id, unit_address, first_address,
+                                                                    status)
         await self.ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
         response_dict['address'] = first_address
+        self.transaction_id += 1
         return response_dict
 
-    async def write_single_register(self, transaction_id, unit_address, address, data):
+    async def write_single_register(self, unit_address, address, data):
         pending_response = asyncio.Future()
-        self._pending_responses[transaction_id] = pending_response
-        serialized_message = serializer.serialize_write_single_register(transaction_id, unit_address, address, data)
+        self._pending_responses[self.transaction_id] = pending_response
+        serialized_message = serializer.serialize_write_single_register(self.transaction_id, unit_address, address,
+                                                                        data)
         await self.ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
         response_dict['address'] = address
+        self.transaction_id += 1
         return response_dict
 
-    async def write_multiple_registers(self, transaction_id, unit_address, first_address, data):
+    async def write_multiple_registers(self, unit_address, first_address, data):
         pending_response = asyncio.Future()
-        self._pending_responses[transaction_id] = pending_response
-        serialized_message = serializer.serialize_write_multiple_registers(transaction_id, unit_address, first_address,
+        self._pending_responses[self.transaction_id] = pending_response
+        serialized_message = serializer.serialize_write_multiple_registers(self.transaction_id, unit_address,
+                                                                           first_address,
                                                                            data)
         await self.ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
         response_dict['address'] = first_address
+        self.transaction_id += 1
         return response_dict
 
-    async def write_multiple_coils(self, transaction_id, unit_address, first_address, data):
+    async def write_multiple_coils(self, unit_address, first_address, data):
         pending_response = asyncio.Future()
-        self._pending_responses[transaction_id] = pending_response
-        serialized_message = serializer.serialize_write_multiple_coils(transaction_id, unit_address, first_address,
+        self._pending_responses[self.transaction_id] = pending_response
+        serialized_message = serializer.serialize_write_multiple_coils(self.transaction_id, unit_address, first_address,
                                                                        data)
         await self.ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
         response_dict['address'] = first_address
+        self.transaction_id += 1
         return response_dict
 
     async def ws_reader(self):

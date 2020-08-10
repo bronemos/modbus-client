@@ -42,9 +42,9 @@ class Backend:
         self.conn.commit()
 
     def get_request_history(self):
-        self.cursor.execute('''SELECT * FROM request_history ORDER BY  transaction_timestamp DESC LIMIT 150''')
+        self.cursor.execute('''SELECT * FROM request_history ORDER BY  transaction_timestamp LIMIT 150''')
         return self.cursor.fetchall()
 
     def get_response_history(self):
-        self.cursor.execute('''SELECT * FROM response_history ORDER BY  transaction_timestamp DESC LIMIT 150''')
+        self.cursor.execute('''SELECT * FROM response_history ORDER BY  transaction_timestamp LIMIT 150''')
         return self.cursor.fetchall()

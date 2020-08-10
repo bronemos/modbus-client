@@ -15,5 +15,5 @@ class ReadCoilsWidget(DefaultRWidget):
         self.layout.addRow('Coil count: ', self.count)
         self.setLayout(self.layout)
 
-    def generate_message(self, transaction_id):
-        return super(ReadCoilsWidget, self).generate_message(transaction_id, Codes.READ_COILS.value)
+    def generate_message(self):
+        return super(ReadCoilsWidget, self).generate_message(Codes.READ_COILS.value)

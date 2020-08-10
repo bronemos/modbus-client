@@ -15,5 +15,5 @@ class ReadInputRegistersWidget(DefaultRWidget):
         self.layout.addRow('Register count: ', self.count)
         self.setLayout(self.layout)
 
-    def generate_message(self, transaction_id):
-        return super(ReadInputRegistersWidget, self).generate_message(transaction_id, Codes.READ_INPUT_REGISTERS.value)
+    def generate_message(self):
+        return super(ReadInputRegistersWidget, self).generate_message(Codes.READ_INPUT_REGISTERS.value)
