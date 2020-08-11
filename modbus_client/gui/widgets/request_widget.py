@@ -9,7 +9,7 @@ from modbus_client.resources.codes import Codes
 class RequestWidget(QGroupBox):
 
     def __init__(self):
-        super(RequestWidget, self).__init__("REQUEST")
+        super(RequestWidget, self).__init__('REQUEST')
         self.stackedRequestWidget = QStackedWidget()
         self.setAlignment(Qt.AlignCenter)
 

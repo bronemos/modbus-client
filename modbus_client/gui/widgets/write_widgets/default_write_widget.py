@@ -17,7 +17,7 @@ class DefaultWWidget(QWidget):
         self.unitAddress = ClickableLineEdit('1')
         self.unitAddress.setToolTip(
             f'Unit address.\nValue between {self.unit_address_constraint[0]} and {self.unit_address_constraint[1]}')
-        self.layout.addRow("Unit address: ", self.unitAddress)
+        self.layout.addRow('Unit address: ', self.unitAddress)
 
     def import_csv(self):
         file_name = QFileDialog.getOpenFileName(self, 'Open data csv', '/home')

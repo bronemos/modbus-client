@@ -1,3 +1,4 @@
+from PySide2.QtCore import Qt
 from PySide2.QtWidgets import *
 
 from modbus_client.gui.style.custom_elements import CenterDelegate
@@ -30,12 +31,20 @@ class LiveResponseWidget(QWidget):
                 message['function_code'] == Codes.READ_DISCRETE_INPUTS.value:
             for no, coil in enumerate(message['status_list'][:message['count']]):
                 self.table.insertRow(curr := self.table.rowCount())
-                self.table.setItem(curr, 0, QTableWidgetItem(str(no + message['address'])))
-                self.table.setItem(curr, 1, QTableWidgetItem(str(coil)))
+                address = QTableWidgetItem()
+                address.setData(Qt.EditRole, no + message['address'])
+                self.table.setItem(curr, 0, address)
+                coil_state = QTableWidgetItem()
+                coil_state.setData(Qt.EditRole, coil)
+                self.table.setItem(curr, 1, coil_state)
         elif message['function_code'] == Codes.READ_HOLDING_REGISTERS.value or \
                 message['function_code'] == Codes.READ_INPUT_REGISTERS.value:
             for no, data in enumerate(message['register_data']):
                 self.table.insertRow(curr := self.table.rowCount())
-                self.table.setItem(curr, 0, QTableWidgetItem(str(no + message['address'])))
-                self.table.setItem(curr, 1, QTableWidgetItem(data))
+                address = QTableWidgetItem()
+                address.setData(Qt.EditRole, no + message['address'])
+                self.table.setItem(curr, 0, address)
+                table_data = QTableWidgetItem()
+                table_data.setData(Qt.EditRole, data)
+                self.table.setItem(curr, 1, table_data)
         self.table.setSortingEnabled(True)

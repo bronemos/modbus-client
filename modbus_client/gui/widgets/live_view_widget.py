@@ -20,7 +20,7 @@ class LiveViewWidget(QGroupBox):
         for i in range(4):
             layout.setColumnStretch(i, 1)
 
-        read_coils = QGroupBox("READ COILS")
+        read_coils = QGroupBox('READ COILS')
         read_coils.setAlignment(QtCore.Qt.AlignCenter)
         read_coils_layout = QVBoxLayout()
 
@@ -31,7 +31,7 @@ class LiveViewWidget(QGroupBox):
         read_coils_layout.addWidget(self.ReadCoilsResponse)
         read_coils.setLayout(read_coils_layout)
 
-        read_discrete_inputs = QGroupBox("READ DISCRETE INPUTS")
+        read_discrete_inputs = QGroupBox('READ DISCRETE INPUTS')
         read_discrete_inputs.setAlignment(QtCore.Qt.AlignCenter)
         read_discrete_inputs_layout = QVBoxLayout()
 
@@ -42,7 +42,7 @@ class LiveViewWidget(QGroupBox):
         read_discrete_inputs_layout.addWidget(self.ReadDiscreteInputsResponse)
         read_discrete_inputs.setLayout(read_discrete_inputs_layout)
 
-        read_holding_registers = QGroupBox("READ HOLDING REGISTERS")
+        read_holding_registers = QGroupBox('READ HOLDING REGISTERS')
         read_holding_registers.setAlignment(QtCore.Qt.AlignCenter)
         read_holding_registers_layout = QVBoxLayout()
 
@@ -53,7 +53,7 @@ class LiveViewWidget(QGroupBox):
         read_holding_registers_layout.addWidget(self.ReadHoldingRegistersResponse)
         read_holding_registers.setLayout(read_holding_registers_layout)
 
-        read_input_registers = QGroupBox("READ INPUT REGISTERS")
+        read_input_registers = QGroupBox('READ INPUT REGISTERS')
         read_input_registers.setAlignment(QtCore.Qt.AlignCenter)
         read_input_registers_layout = QVBoxLayout()
 

@@ -9,10 +9,11 @@ class DefaultRWidget(QWidget):
         super(DefaultRWidget, self).__init__()
         self.layout = QFormLayout()
         self.unitAddress = ClickableLineEdit('1')
-        self.unitAddress.setToolTip('Unit address.\nValue between 1 and 65535')
+        self.unitAddress.setToolTip(
+            f'Unit address.\nValue between {self.unit_address_constraint[0]} and {self.unit_address_constraint[1]}')
         self.address = ClickableLineEdit('0')
         self.count = ClickableLineEdit('1')
-        self.layout.addRow("Unit address: ", self.unitAddress)
+        self.layout.addRow('Unit address: ', self.unitAddress)
 
     def validate_input(self, window):
         try:
