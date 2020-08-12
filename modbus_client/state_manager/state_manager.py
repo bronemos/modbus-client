@@ -11,6 +11,10 @@ from modbus_client.resources.codes import Codes
 
 
 class StateManager(QObject):
+    """
+    Used for communication between GUI and Connection module while monitoring and storing current state of the device
+    that it's connected to.
+    """
     executor = ThreadPoolExecutor(max_workers=1)
     update = Signal(dict)
     current_state = dict()
@@ -25,6 +29,9 @@ class StateManager(QObject):
         self.backend = Backend()
 
     def run_loop(self):
+        """
+        Initiates the loop thread of the state manager.
+        """
         self.disconnecting = False
         self.loop_thread = Thread(
             target=lambda: asyncio.new_event_loop().run_until_complete(self._state_manager_loop()), daemon=True)
@@ -38,15 +45,15 @@ class StateManager(QObject):
         except Exception:
             self.update.emit('wstunnel_error')
 
-        writer_future = asyncio.ensure_future(self.write_loop())
+        writer_future = asyncio.ensure_future(self._write_loop())
         reader_future = asyncio.ensure_future(self.connection.ws_reader())
-        counter_future = asyncio.ensure_future(self.counter())
+        counter_future = asyncio.ensure_future(self._counter())
         await asyncio.wait([writer_future, reader_future, counter_future], return_when=asyncio.FIRST_COMPLETED)
         counter_future.cancel()
         writer_future.cancel()
         reader_future.cancel()
 
-    async def write_loop(self):
+    async def _write_loop(self):
         while True:
             message = await asyncio.get_event_loop().run_in_executor(self.executor, self._ext_get_message)
             if message == 'DC':
@@ -89,15 +96,17 @@ class StateManager(QObject):
 
             if message['user_generated']:
                 try:
-                    self.backend.insert_request_history(response)
-                    self.backend.insert_response_history(response)
+                    self.backend.insert_request_history(response['transaction_id'], response['unit_address'],
+                                                        response['function_code'], response['raw_request'])
+                    self.backend.insert_response_history(response['transaction_id'], response['unit_address'],
+                                                         response['function_code'], response['raw_data'])
                 except Exception as e:
                     print(e)
                 self.update.emit(response)
             else:
                 self.update_view.emit(response)
 
-    async def counter(self):
+    async def _counter(self):
         while True:
             self.initiate_live_view_update.emit()
             for i in range(1, 101):
