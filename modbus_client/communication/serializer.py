@@ -1,11 +1,21 @@
 import math
+from typing import Union
 
 from modbus_client.resources.codes import Codes
 
 protocol_code = '0000'
 
 
-def deserialize_message(message):
+def deserialize_message(message: Union[str, bytes]) -> Union[str, dict]:
+    """
+    Function for deserializing messages of type string or bytes.
+
+    Args:
+        message (str, bytes): Message to be deserialized, can be either string or bytes.
+
+    Returns:
+        If the message is string, string format of the message is returned, otherwise a corresponding dictionary is created.
+    """
     if type(message) == bytes:
         transaction_id = int(message[0:2].hex(), 16)
         unit_address = message[6]
@@ -41,7 +51,21 @@ def deserialize_message(message):
     return message
 
 
-def serialize_read(function_code, transaction_id, unit_address, first_address, count):
+def serialize_read(function_code: int, transaction_id: int, unit_address: int, first_address: int, count: int) -> str:
+    """
+    Universal function for handling serialization of all read type messages.
+
+    Args:
+        function_code (int): Unique function code.
+        transaction_id (int): Unique ID of the transaction.
+        unit_address (int): Address of the referenced unit.
+        first_address (int): Starting address.
+        count (int): Number of items to be read.
+
+    Returns:
+        hex_string (str): Returns hex representation of the message in string format.
+
+    """
     unit_address_hex = '{:02x}'.format(unit_address)
     function_code_hex = '{:02x}'.format(function_code)
     transaction_id_hex = '{:04x}'.format(transaction_id)
@@ -57,23 +81,19 @@ def serialize_read(function_code, transaction_id, unit_address, first_address, c
             + count_hex)
 
 
-def deserialize_read_coils():
-    pass
+def serialize_write_single_coil(transaction_id: int, unit_address: int, address: int, status: bool) -> str:
+    """
+    Serializer function for writing single coil.
 
+    Args:
+        transaction_id: Unique ID of the transaction.
+        unit_address (int): Address of the referenced unit.
+        address (int): Address to be written to.
+        status (bool): Status of the coil (True if set False otherwise)
 
-def deserialize_read_discrete_inputs():
-    pass
-
-
-def deserialize_read_holding_registers():
-    pass
-
-
-def deserialize_read_input_registers():
-    pass
-
-
-def serialize_write_single_coil(transaction_id, unit_address, address, status):
+    Returns:
+        hex_string (str): Returns hex representation of the message in string format.
+    """
     unit_address_hex = '{:02x}'.format(unit_address)
     function_code_hex = '{:02x}'.format(Codes.WRITE_SINGLE_COIL.value)
     transaction_id_hex = '{:04x}'.format(transaction_id)
@@ -89,11 +109,19 @@ def serialize_write_single_coil(transaction_id, unit_address, address, status):
             + status_hex)
 
 
-def deserialize_write_single_coil():
-    pass
+def serialize_write_single_register(transaction_id: int, unit_address: int, address: int, data: int) -> str:
+    """
+    Serializer function for writing to a single register.
 
+    Args:
+        transaction_id (int): Unique ID of the transaction.
+        unit_address (int): Address of the referenced unit.
+        address (int): Address to be written to.
+        data (int): Data to be written in the register.
 
-def serialize_write_single_register(transaction_id, unit_address, address, data):
+    Returns:
+        hex_string (str): Returns hex representation of the message in string format.
+    """
     unit_address_hex = '{:02x}'.format(unit_address)
     function_code_hex = '{:02x}'.format(Codes.WRITE_SINGLE_REGISTER.value)
     transaction_id_hex = '{:04x}'.format(transaction_id)
@@ -109,11 +137,19 @@ def serialize_write_single_register(transaction_id, unit_address, address, data)
             + data_hex)
 
 
-def deserialize_write_single_register():
-    pass
+def serialize_write_multiple_coils(transaction_id: int, unit_address: int, first_address: int, data: list) -> str:
+    """
+    Serializer function for writing multiple coils.
 
+    Args:
+        transaction_id (int): Unique ID of the transaction.
+        unit_address (int): Address of the referenced unit.
+        first_address (int): Starting address.
+        data (list): List of data to be written.
 
-def serialize_write_multiple_coils(transaction_id, unit_address, first_address, data):
+    Returns:
+        hex_string (str): Returns hex representation of the message in string format.
+    """
     unit_address_hex = '{:02x}'.format(unit_address)
     function_code_hex = '{:02x}'.format(Codes.WRITE_MULTIPLE_COILS.value)
     transaction_id_hex = '{:04x}'.format(transaction_id)
@@ -134,11 +170,19 @@ def serialize_write_multiple_coils(transaction_id, unit_address, first_address, 
             + data_hex)
 
 
-def deserialize_write_multiple_coils():
-    pass
+def serialize_write_multiple_registers(transaction_id: int, unit_address: int, first_address: int, data: list) -> str:
+    """
+    Serializer function for writing multiple registers.
 
+    Args:
+        transaction_id (int): Unique ID of the transaction.
+        unit_address (int): Address of the referenced unit.
+        first_address (int): Starting address.
+        data (list): List of data to be written.
 
-def serialize_write_multiple_registers(transaction_id, unit_address, first_address, data):
+    Returns:
+        hex_string (str): Returns hex representation of the message in string format.
+    """
     unit_address_hex = '{:02x}'.format(unit_address)
     function_code_hex = '{:02x}'.format(Codes.WRITE_MULTIPLE_REGISTERS.value)
     transaction_id_hex = '{:04x}'.format(transaction_id)
@@ -156,7 +200,3 @@ def serialize_write_multiple_registers(transaction_id, unit_address, first_addre
             + register_count_hex
             + byte_count_hex
             + data_hex)
-
-
-def deserialize_write_multiple_register():
-    pass
