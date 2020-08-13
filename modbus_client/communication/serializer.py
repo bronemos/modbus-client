@@ -63,7 +63,7 @@ def serialize_read(function_code: int, transaction_id: int, unit_address: int, f
         count (int): Number of items to be read.
 
     Returns:
-        hex_string (str): Returns hex representation of the message in string format.
+        hex_string (str): Hex representation of the message in string format.
 
     """
     unit_address_hex = '{:02x}'.format(unit_address)
@@ -92,7 +92,7 @@ def serialize_write_single_coil(transaction_id: int, unit_address: int, address:
         status (bool): Status of the coil (True if set False otherwise)
 
     Returns:
-        hex_string (str): Returns hex representation of the message in string format.
+        hex_string (str): Hex representation of the message in string format.
     """
     unit_address_hex = '{:02x}'.format(unit_address)
     function_code_hex = '{:02x}'.format(Codes.WRITE_SINGLE_COIL.value)
@@ -120,7 +120,7 @@ def serialize_write_single_register(transaction_id: int, unit_address: int, addr
         data (int): Data to be written in the register.
 
     Returns:
-        hex_string (str): Returns hex representation of the message in string format.
+        hex_string (str): Hex representation of the message in string format.
     """
     unit_address_hex = '{:02x}'.format(unit_address)
     function_code_hex = '{:02x}'.format(Codes.WRITE_SINGLE_REGISTER.value)
@@ -148,7 +148,7 @@ def serialize_write_multiple_coils(transaction_id: int, unit_address: int, first
         data (list): List of data to be written.
 
     Returns:
-        hex_string (str): Returns hex representation of the message in string format.
+        hex_string (str): Hex representation of the message in string format.
     """
     unit_address_hex = '{:02x}'.format(unit_address)
     function_code_hex = '{:02x}'.format(Codes.WRITE_MULTIPLE_COILS.value)
@@ -181,7 +181,7 @@ def serialize_write_multiple_registers(transaction_id: int, unit_address: int, f
         data (list): List of data to be written.
 
     Returns:
-        hex_string (str): Returns hex representation of the message in string format.
+        hex_string (str): Hex representation of the message in string format.
     """
     unit_address_hex = '{:02x}'.format(unit_address)
     function_code_hex = '{:02x}'.format(Codes.WRITE_MULTIPLE_REGISTERS.value)

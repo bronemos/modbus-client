@@ -1,3 +1,5 @@
+import csv
+
 from PySide2 import QtCore
 from PySide2.QtWidgets import *
 
@@ -22,9 +24,9 @@ class HistorianWidget(QGroupBox):
         self.request_history.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.request_history.horizontalHeader().setStretchLastSection(True)
         self.request_history.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'Data']
-        self.request_history.setColumnCount(len(header_labels))
-        self.request_history.setHorizontalHeaderLabels(header_labels)
+        self.request_header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'Data']
+        self.request_history.setColumnCount(len(self.request_header_labels))
+        self.request_history.setHorizontalHeaderLabels(self.request_header_labels)
         req_layout = QVBoxLayout()
         req_layout.addWidget(self.request_history)
         req_layout.addWidget(self.export_request_history)
@@ -40,9 +42,9 @@ class HistorianWidget(QGroupBox):
         self.response_history.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.response_history.horizontalHeader().setStretchLastSection(True)
         self.response_history.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'Data']
-        self.response_history.setColumnCount(len(header_labels))
-        self.response_history.setHorizontalHeaderLabels(header_labels)
+        self.response_header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'Data']
+        self.response_history.setColumnCount(len(self.response_header_labels))
+        self.response_history.setHorizontalHeaderLabels(self.response_header_labels)
         res_layout = QVBoxLayout()
         res_layout.addWidget(self.response_history)
         res_layout.addWidget(self.export_response_history)
@@ -96,3 +98,21 @@ class HistorianWidget(QGroupBox):
                 self.request_history.setItem(0, 4, data)
 
         self.existing_requests = self.existing_requests | set(requests)
+
+    def export_request_history_to_csv(self, backend):
+        requests = backend.get_request_history()
+        request_history = open('request_history.csv', 'w', newline='')
+
+        with request_history:
+            write = csv.writer(request_history)
+            write.writerow(self.request_header_labels)
+            write.writerows(requests)
+
+    def export_response_history_to_csv(self, backend):
+        responses = backend.get_response_history()
+        response_history = open('response_history.csv', 'w', newline='')
+
+        with response_history:
+            write = csv.writer(response_history)
+            write.writerows(self.response_header_labels)
+            write.writerows(responses)

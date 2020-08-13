@@ -53,6 +53,10 @@ class Application(QMainWindow):
         p = self.historianWidget.palette()
         p.setColor(self.historianWidget.backgroundRole(), Qt.white)
         self.historianWidget.setPalette(p)
+        self.historianWidget.export_request_history.clicked.connect(
+            lambda: self.historianWidget.export_request_history_to_csv(self.state_manager.backend))
+        self.historianWidget.export_response_history.clicked.connect(
+            lambda: self.historianWidget.export_response_history_to_csv(self.state_manager.backend))
         self.liveViewWidget = LiveViewWidget(self.state_manager.user_req_queue)
         self.state_manager.update_counter.connect(self.liveViewWidget.progressBar.setValue)
         self.state_manager.initiate_live_view_update.connect(self.liveViewWidget.update_view_request)
