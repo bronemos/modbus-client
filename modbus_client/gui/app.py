@@ -94,19 +94,24 @@ class Application(QMainWindow):
             self.historianWidget.load(self.state_manager.backend)
             self.centerWidget.addWidget(self.historianWidget)
             self.centerWidget.setCurrentWidget(self.historianWidget)
+            self.HomeWidget.live_button.setChecked(False)
         else:
             self.centerWidget.setCurrentWidget(self.reqresWidget)
+            self.HomeWidget.live_button.setChecked(False)
 
     def _switch_to_live(self):
         if self.centerWidget.currentWidget() != self.liveViewWidget:
             self.centerWidget.addWidget(self.liveViewWidget)
             self.centerWidget.setCurrentWidget(self.liveViewWidget)
+            self.HomeWidget.historian_button.setChecked(False)
         else:
             self.centerWidget.setCurrentWidget(self.reqresWidget)
+            self.HomeWidget.historian_button.setChecked(False)
 
     def _switch_to_live_popup(self):
         if self.centerWidget.currentWidget() == self.liveViewWidget:
             self.centerWidget.setCurrentWidget(self.reqresWidget)
+            self.HomeWidget.live_button.setChecked(False)
         self.liveViewWidget.setParent(None)
         self.liveViewWidget.show()
         self.liveViewWidget.ReadCoilsResponse.setFocus()
@@ -114,6 +119,7 @@ class Application(QMainWindow):
     def _switch_to_historian_popup(self):
         if self.centerWidget.currentWidget() == self.historianWidget:
             self.centerWidget.setCurrentWidget(self.reqresWidget)
+            self.HomeWidget.historian_button.setChecked(False)
         self.historianWidget.load(self.state_manager.backend)
         self.historianWidget.setParent(None)
         self.historianWidget.show()

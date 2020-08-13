@@ -105,7 +105,7 @@ class HistorianWidget(QGroupBox):
 
     def export_request_history_to_csv(self, backend):
         requests = backend.get_request_history()
-        request_history = open('request_history.csv', 'w', newline='')
+        request_history = open('request_history.csv', 'w')
 
         with request_history:
             write = csv.writer(request_history)
@@ -114,7 +114,7 @@ class HistorianWidget(QGroupBox):
 
     def export_response_history_to_csv(self, backend):
         responses = backend.get_response_history()
-        response_history = open('response_history.csv', 'w', newline='')
+        response_history = open('response_history.csv', 'w')
 
         with response_history:
             write = csv.writer(response_history)
