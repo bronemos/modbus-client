@@ -56,6 +56,7 @@ class HistorianWidget(QGroupBox):
 
     def load(self, backend):
         responses = backend.get_response_history()
+        self.response_history.setSortingEnabled(False)
         for response in responses:
             if response not in self.existing_responses:
                 self.response_history.insertRow(0)
@@ -76,8 +77,10 @@ class HistorianWidget(QGroupBox):
                 self.response_history.setItem(0, 4, data)
 
         self.existing_responses = self.existing_responses | set(responses)
+        self.response_history.setSortingEnabled(True)
 
         requests = backend.get_request_history()
+        self.request_history.setSortingEnabled(False)
         for request in requests:
             if request not in self.existing_requests:
                 self.request_history.insertRow(0)
@@ -98,6 +101,7 @@ class HistorianWidget(QGroupBox):
                 self.request_history.setItem(0, 4, data)
 
         self.existing_requests = self.existing_requests | set(requests)
+        self.request_history.setSortingEnabled(True)
 
     def export_request_history_to_csv(self, backend):
         requests = backend.get_request_history()
