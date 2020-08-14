@@ -68,7 +68,7 @@ class Backend:
         Returns:
             rows (list): Rows of the request history table.
         """
-        self.cursor.execute('''SELECT * FROM request_history ORDER BY  transaction_timestamp LIMIT 150''')
+        self.cursor.execute('''SELECT * FROM request_history ORDER BY  transaction_timestamp''')
         return self.cursor.fetchall()
 
     def get_response_history(self) -> list:
@@ -78,5 +78,5 @@ class Backend:
         Returns:
             rows (list): Rows of the response history table.
         """
-        self.cursor.execute('''SELECT * FROM response_history ORDER BY  transaction_timestamp LIMIT 150''')
+        self.cursor.execute('''SELECT * FROM response_history ORDER BY  transaction_timestamp''')
         return self.cursor.fetchall()

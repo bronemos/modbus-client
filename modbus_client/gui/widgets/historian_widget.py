@@ -1,4 +1,5 @@
 import csv
+from time import time
 
 from PySide2 import QtCore
 from PySide2.QtWidgets import *
@@ -9,6 +10,7 @@ from modbus_client.gui.style.custom_elements import CenterDelegate
 class HistorianWidget(QGroupBox):
     existing_responses = set()
     existing_requests = set()
+    loaded = False
 
     def __init__(self):
         super(HistorianWidget, self).__init__()
@@ -55,52 +57,101 @@ class HistorianWidget(QGroupBox):
         self.setLayout(layout)
 
     def load(self, backend):
+
         responses = backend.get_response_history()
+
         self.response_history.setSortingEnabled(False)
-        for response in responses:
-            if response not in self.existing_responses:
-                self.response_history.insertRow(0)
-                timestamp = QTableWidgetItem()
-                timestamp.setData(QtCore.Qt.EditRole, response[0])
-                self.response_history.setItem(0, 0, timestamp)
-                transaction_id = QTableWidgetItem()
-                transaction_id.setData(QtCore.Qt.EditRole, response[1])
-                self.response_history.setItem(0, 1, transaction_id)
-                unit_address = QTableWidgetItem()
-                unit_address.setData(QtCore.Qt.EditRole, response[2])
-                self.response_history.setItem(0, 2, unit_address)
-                function_code = QTableWidgetItem()
-                function_code.setData(QtCore.Qt.EditRole, response[3])
-                self.response_history.setItem(0, 3, function_code)
-                data = QTableWidgetItem()
-                data.setData(QtCore.Qt.EditRole, str(response[4]))
-                self.response_history.setItem(0, 4, data)
+
+        start = time()
+        if not self.loaded:
+            for response in responses:
+                if response not in self.existing_responses:
+                    self.response_history.insertRow(0)
+                    timestamp = QTableWidgetItem()
+                    timestamp.setData(QtCore.Qt.EditRole, response[0])
+                    self.response_history.setItem(0, 0, timestamp)
+                    transaction_id = QTableWidgetItem()
+                    transaction_id.setData(QtCore.Qt.EditRole, response[1])
+                    self.response_history.setItem(0, 1, transaction_id)
+                    unit_address = QTableWidgetItem()
+                    unit_address.setData(QtCore.Qt.EditRole, response[2])
+                    self.response_history.setItem(0, 2, unit_address)
+                    function_code = QTableWidgetItem()
+                    function_code.setData(QtCore.Qt.EditRole, response[3])
+                    self.response_history.setItem(0, 3, function_code)
+                    data = QTableWidgetItem()
+                    data.setData(QtCore.Qt.EditRole, str(response[4]))
+                    self.response_history.setItem(0, 4, data)
+        else:
+            response = responses[0]
+            self.response_history.insertRow(0)
+            timestamp = QTableWidgetItem()
+            timestamp.setData(QtCore.Qt.EditRole, response[0])
+            self.response_history.setItem(0, 0, timestamp)
+            transaction_id = QTableWidgetItem()
+            transaction_id.setData(QtCore.Qt.EditRole, response[1])
+            self.response_history.setItem(0, 1, transaction_id)
+            unit_address = QTableWidgetItem()
+            unit_address.setData(QtCore.Qt.EditRole, response[2])
+            self.response_history.setItem(0, 2, unit_address)
+            function_code = QTableWidgetItem()
+            function_code.setData(QtCore.Qt.EditRole, response[3])
+            self.response_history.setItem(0, 3, function_code)
+            data = QTableWidgetItem()
+            data.setData(QtCore.Qt.EditRole, str(response[4]))
+            self.response_history.setItem(0, 4, data)
+        print(time() - start)
 
         self.existing_responses = self.existing_responses | set(responses)
         self.response_history.setSortingEnabled(True)
 
         requests = backend.get_request_history()
         self.request_history.setSortingEnabled(False)
-        for request in requests:
-            if request not in self.existing_requests:
-                self.request_history.insertRow(0)
-                timestamp = QTableWidgetItem()
-                timestamp.setData(QtCore.Qt.EditRole, request[0])
-                self.request_history.setItem(0, 0, timestamp)
-                transaction_id = QTableWidgetItem()
-                transaction_id.setData(QtCore.Qt.EditRole, request[1])
-                self.request_history.setItem(0, 1, transaction_id)
-                unit_address = QTableWidgetItem()
-                unit_address.setData(QtCore.Qt.EditRole, request[2])
-                self.request_history.setItem(0, 2, unit_address)
-                function_code = QTableWidgetItem()
-                function_code.setData(QtCore.Qt.EditRole, request[3])
-                self.request_history.setItem(0, 3, function_code)
-                data = QTableWidgetItem()
-                data.setData(QtCore.Qt.EditRole, str(request[4]))
-                self.request_history.setItem(0, 4, data)
+        start = time()
+        if not self.loaded:
+            for request in requests:
+                if request not in self.existing_requests:
+                    self.request_history.insertRow(0)
+                    timestamp = QTableWidgetItem()
+                    timestamp.setData(QtCore.Qt.EditRole, request[0])
+                    self.request_history.setItem(0, 0, timestamp)
+                    transaction_id = QTableWidgetItem()
+                    transaction_id.setData(QtCore.Qt.EditRole, request[1])
+                    self.request_history.setItem(0, 1, transaction_id)
+                    unit_address = QTableWidgetItem()
+                    unit_address.setData(QtCore.Qt.EditRole, request[2])
+                    self.request_history.setItem(0, 2, unit_address)
+                    function_code = QTableWidgetItem()
+                    function_code.setData(QtCore.Qt.EditRole, request[3])
+                    self.request_history.setItem(0, 3, function_code)
+                    data = QTableWidgetItem()
+                    data.setData(QtCore.Qt.EditRole, str(request[4]))
+                    self.request_history.setItem(0, 4, data)
+            self.loaded = True
+        else:
+            request = requests[0]
+            self.request_history.insertRow(0)
+            timestamp = QTableWidgetItem()
+            timestamp.setData(QtCore.Qt.EditRole, request[0])
+            self.request_history.setItem(0, 0, timestamp)
+            transaction_id = QTableWidgetItem()
+            transaction_id.setData(QtCore.Qt.EditRole, request[1])
+            self.request_history.setItem(0, 1, transaction_id)
+            unit_address = QTableWidgetItem()
+            unit_address.setData(QtCore.Qt.EditRole, request[2])
+            self.request_history.setItem(0, 2, unit_address)
+            function_code = QTableWidgetItem()
+            function_code.setData(QtCore.Qt.EditRole, request[3])
+            self.request_history.setItem(0, 3, function_code)
+            data = QTableWidgetItem()
+            data.setData(QtCore.Qt.EditRole, str(request[4]))
+            self.request_history.setItem(0, 4, data)
 
+        print(time() - start)
+
+        start = time()
         self.existing_requests = self.existing_requests | set(requests)
+        print(time() - start)
         self.request_history.setSortingEnabled(True)
 
     def export_request_history_to_csv(self, backend):

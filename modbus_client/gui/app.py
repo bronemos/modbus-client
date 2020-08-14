@@ -162,6 +162,7 @@ class Application(QMainWindow):
             self.requestLogWidget.update_log(message)
             self.responseLogWidget.update_log(message)
             self.resWidget.update_response(message)
+            self.historianWidget.load(self.state_manager.backend)
 
     def closeEvent(self, event):
         super(Application, self).closeEvent(event)
