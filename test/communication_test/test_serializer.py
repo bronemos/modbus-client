@@ -8,6 +8,46 @@ from modbus_client.resources.codes import Codes
 protocol_code = '0000'
 
 
+@pytest.mark.parametrize(['message', 'expected'],
+                         [(bytes.fromhex('0005000000050201028002'), {'transaction_id': 5,
+                                                                     'unit_address': 2,
+                                                                     'function_code': 1,
+                                                                     'status_list': [0, 0, 0, 0, 0, 0, 0, 1,
+                                                                                     0, 1, 0, 0, 0, 0, 0, 0],
+                                                                     'raw_data': bytes.fromhex('028002')}),
+                          (bytes.fromhex('000A000000050102020500'), {'transaction_id': 10,
+                                                                     'unit_address': 1,
+                                                                     'function_code': 2,
+                                                                     'status_list': [1, 0, 1, 0, 0, 0, 0, 0,
+                                                                                     0, 0, 0, 0, 0, 0, 0, 0],
+                                                                     'raw_data': bytes.fromhex('020500')}),
+                          (bytes.fromhex('000F0000000701030403E81388'), {'transaction_id': 15,
+                                                                         'unit_address': 1,
+                                                                         'function_code': 3,
+                                                                         'register_data': ['1000', '5000'],
+                                                                         'raw_data': bytes.fromhex('0403E81388')}),
+                          (bytes.fromhex('0014000000070104042710C350'), {'transaction_id': 20,
+                                                                         'unit_address': 1,
+                                                                         'function_code': 4,
+                                                                         'register_data': ['10000', '50000'],
+                                                                         'raw_data': bytes.fromhex('042710C350')}),
+                          (bytes.fromhex('00190000000601050064FF00'), {'transaction_id': 25,
+                                                                       'unit_address': 1,
+                                                                       'function_code': 5,
+                                                                       'raw_data': bytes.fromhex('0064FF00')}),
+                          (bytes.fromhex('001E00000006010600643A98'), {'transaction_id': 30,
+                                                                       'unit_address': 1,
+                                                                       'function_code': 6,
+                                                                       'raw_data': bytes.fromhex('00643A98')}),
+                          (bytes.fromhex('0023000000061C1000640002'), {'transaction_id': 35,
+                                                                       'unit_address': 28,
+                                                                       'function_code': 16,
+                                                                       'raw_data': bytes.fromhex('00640002')})])
+def test_deserialize_message(message, expected):
+    print(deserialize_message(message))
+    assert deserialize_message(message) == expected
+
+
 def deserialize_message(message: Union[str, bytes]) -> Union[str, dict]:
     """
     Function for deserializing messages of type string or bytes.
