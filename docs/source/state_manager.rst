@@ -1,5 +1,5 @@
 State Manager
 =============
 
-.. automodule:: modbus_client.state_manager.state_manager
+.. automodule:: modbus_client.state_manager
    :members:

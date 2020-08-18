@@ -47,12 +47,12 @@ class Connection:
         Reads coil statuses on the device.
 
         Args:
-            unit_address (int): Address of the referenced unit.
-            first_address (int): Starting address.
-            count (int): Number of coils to be read.
+            unit_address: Address of the referenced unit.
+            first_address: Starting address.
+            count: Number of coils to be read.
 
         Returns:
-            response_dict (dict): Dictionary created as a response to the request.
+            dict: Dictionary created as a response to the request.
         """
         return await self._read_writer(Codes.READ_COILS.value, self._transaction_id, unit_address, first_address, count)
 
@@ -61,12 +61,12 @@ class Connection:
         Reads discrete inputs on the device.
 
         Args:
-            unit_address (int): Address of the referenced unit.
-            first_address (int): Starting address.
-            count (int): Number of discrete inputs to be read.
+            unit_address: Address of the referenced unit.
+            first_address: Starting address.
+            count: Number of discrete inputs to be read.
 
         Returns:
-            response_dict (dict): Dictionary created as a response to the request.
+            dict: Dictionary created as a response to the request.
         """
         return await self._read_writer(Codes.READ_DISCRETE_INPUTS.value, self._transaction_id, unit_address,
                                        first_address, count)
@@ -76,12 +76,12 @@ class Connection:
         Reads holding registers on the device.
 
         Args:
-            unit_address (int): Address of the referenced unit.
-            first_address (int): Starting address.
-            count (int): Number of holding registers to be read.
+            unit_address: Address of the referenced unit.
+            first_address: Starting address.
+            count: Number of holding registers to be read.
 
         Returns:
-            response_dict (dict): Dictionary created as a response to the request.
+            dict: Dictionary created as a response to the request.
         """
         return await self._read_writer(Codes.READ_HOLDING_REGISTERS.value, self._transaction_id, unit_address,
                                        first_address, count)
@@ -91,12 +91,12 @@ class Connection:
         Reads input registers on the device.
 
         Args:
-            unit_address (int): Address of the referenced unit.
-            first_address (int): Starting address.
-            count (int): Number of input registers to be read.
+            unit_address: Address of the referenced unit.
+            first_address: Starting address.
+            count: Number of input registers to be read.
 
         Returns:
-            response_dict (dict): Dictionary created as a response to the request.
+            dict: Dictionary created as a response to the request.
         """
         return await self._read_writer(Codes.READ_INPUT_REGISTERS.value, self._transaction_id, unit_address,
                                        first_address, count)
@@ -106,12 +106,12 @@ class Connection:
         Writes to a single coil on the device.
 
         Args:
-            unit_address (int): Address of the referenced unit.
-            address (int): Address to be written to.
-            status (bool): Status of the coil (True if set False otherwise)
+            unit_address: Address of the referenced unit.
+            address: Address to be written to.
+            status: Status of the coil (True if set False otherwise)
 
         Returns:
-            response_dict (dict): Dictionary created as a response to the request.
+            dict: Dictionary created as a response to the request.
         """
         pending_response = asyncio.Future()
         self._pending_responses[self._transaction_id] = pending_response
@@ -128,12 +128,12 @@ class Connection:
         Writes to a single register on the device.
 
         Args:
-            unit_address (int): Address of the referenced unit.
-            address (int): Address to be written to.
-            data (int): Data to be written in the register.
+            unit_address: Address of the referenced unit.
+            address: Address to be written to.
+            data: Data to be written in the register.
 
         Returns:
-            response_dict (dict): Dictionary created as a response to the request.
+            dict: Dictionary created as a response to the request.
         """
         pending_response = asyncio.Future()
         self._pending_responses[self._transaction_id] = pending_response
@@ -151,12 +151,12 @@ class Connection:
         Writes to multiple registers.
 
         Args:
-            unit_address (int): Address of the referenced unit.
-            first_address (int): Starting address.
-            data (list): List of data to be written.
+            unit_address: Address of the referenced unit.
+            first_address: Starting address.
+            data: List of data to be written.
 
         Returns:
-            response_dict (dict): Dictionary created as a response to the request.
+            dict: Dictionary created as a response to the request.
         """
         pending_response = asyncio.Future()
         self._pending_responses[self._transaction_id] = pending_response
@@ -174,12 +174,12 @@ class Connection:
         Writes to multiple coils.
 
         Args:
-            unit_address (int): Address of the referenced unit.
-            first_address (int): Starting address.
-            data (list): List of data to be written.
+            unit_address: Address of the referenced unit.
+            first_address: Starting address.
+            data: List of data to be written.
 
         Returns:
-            response_dict (dict): Dictionary created as a response to the request.
+            dict: Dictionary created as a response to the request.
         """
         pending_response = asyncio.Future()
         self._pending_responses[self._transaction_id] = pending_response

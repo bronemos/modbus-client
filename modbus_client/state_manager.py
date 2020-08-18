@@ -1,5 +1,6 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import suppress
 from queue import Queue
 from threading import Thread
 
@@ -49,9 +50,10 @@ class StateManager(QObject):
         reader_future = asyncio.ensure_future(self._connection.ws_reader())
         counter_future = asyncio.ensure_future(self._counter())
         await asyncio.wait([writer_future, reader_future, counter_future], return_when=asyncio.FIRST_COMPLETED)
-        counter_future.cancel()
-        writer_future.cancel()
-        reader_future.cancel()
+        with suppress(asyncio.CancelledError):
+            counter_future.cancel()
+            writer_future.cancel()
+            reader_future.cancel()
 
     async def _write_loop(self):
         while True:
