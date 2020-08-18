@@ -80,3 +80,9 @@ class Backend:
         """
         self.cursor.execute('''SELECT * FROM response_history ORDER BY  transaction_timestamp''')
         return self.cursor.fetchall()
+
+    def close(self):
+        """
+        Closes the database connection.
+        """
+        self.conn.close()
