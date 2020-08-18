@@ -12,8 +12,6 @@ conf = {
 
 
 class Connection:
-    _pending_responses = dict()
-    _transaction_id = 0
 
     async def connect(self):
         """
@@ -22,31 +20,21 @@ class Connection:
         Returns:
             Response to the connection request.
         """
+        self._pending_responses = dict()
+        self._transaction_id = 0
         self.session = aiohttp.ClientSession()
-        self.ws = await self.session.ws_connect(
+        self._ws = await self.session.ws_connect(
             'ws://' + ':'.join([conf['host'], conf['port']]) + '/ws')
-        return (await self.ws.receive()).data
+        return (await self._ws.receive()).data
 
-    async def read_writer(self, function_code: int, transaction_id: int, unit_address: int, first_address: int,
-                          count: int) -> dict:
-        """
-        Serializes a message based on parameters and sends it.
+    async def _read_writer(self, function_code: int, transaction_id: int, unit_address: int, first_address: int,
+                           count: int) -> dict:
 
-        Args:
-            function_code (int): Unique function code.
-            transaction_id (int): Unique ID of the transaction.
-            unit_address (int): Address of the referenced unit.
-            first_address (int): Starting address.
-            count (int): Number of items to be read.
-
-        Returns:
-            response_dict (dict): Dictionary created as a response to the request.
-        """
         pending_response = asyncio.Future()
         self._pending_responses[transaction_id] = pending_response
         serialized_message = serializer.serialize_read(function_code, transaction_id, unit_address, first_address,
                                                        count)
-        await self.ws.send_bytes(bytes.fromhex(serialized_message))
+        await self._ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
         response_dict['address'] = first_address
@@ -66,7 +54,7 @@ class Connection:
         Returns:
             response_dict (dict): Dictionary created as a response to the request.
         """
-        return await self.read_writer(Codes.READ_COILS.value, self._transaction_id, unit_address, first_address, count)
+        return await self._read_writer(Codes.READ_COILS.value, self._transaction_id, unit_address, first_address, count)
 
     async def read_discrete_inputs(self, unit_address: int, first_address: int, count: int) -> dict:
         """
@@ -80,8 +68,8 @@ class Connection:
         Returns:
             response_dict (dict): Dictionary created as a response to the request.
         """
-        return await self.read_writer(Codes.READ_DISCRETE_INPUTS.value, self._transaction_id, unit_address,
-                                      first_address, count)
+        return await self._read_writer(Codes.READ_DISCRETE_INPUTS.value, self._transaction_id, unit_address,
+                                       first_address, count)
 
     async def read_holding_registers(self, unit_address: int, first_address: int, count: int) -> dict:
         """
@@ -95,8 +83,8 @@ class Connection:
         Returns:
             response_dict (dict): Dictionary created as a response to the request.
         """
-        return await self.read_writer(Codes.READ_HOLDING_REGISTERS.value, self._transaction_id, unit_address,
-                                      first_address, count)
+        return await self._read_writer(Codes.READ_HOLDING_REGISTERS.value, self._transaction_id, unit_address,
+                                       first_address, count)
 
     async def read_input_registers(self, unit_address: int, first_address: int, count: int) -> dict:
         """
@@ -110,8 +98,8 @@ class Connection:
         Returns:
             response_dict (dict): Dictionary created as a response to the request.
         """
-        return await self.read_writer(Codes.READ_INPUT_REGISTERS.value, self._transaction_id, unit_address,
-                                      first_address, count)
+        return await self._read_writer(Codes.READ_INPUT_REGISTERS.value, self._transaction_id, unit_address,
+                                       first_address, count)
 
     async def write_single_coil(self, unit_address: int, address: int, status: bool) -> dict:
         """
@@ -128,7 +116,7 @@ class Connection:
         pending_response = asyncio.Future()
         self._pending_responses[self._transaction_id] = pending_response
         serialized_message = serializer.serialize_write_single_coil(self._transaction_id, unit_address, address, status)
-        await self.ws.send_bytes(bytes.fromhex(serialized_message))
+        await self._ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
         response_dict['address'] = address
@@ -151,7 +139,7 @@ class Connection:
         self._pending_responses[self._transaction_id] = pending_response
         serialized_message = serializer.serialize_write_single_register(self._transaction_id, unit_address, address,
                                                                         data)
-        await self.ws.send_bytes(bytes.fromhex(serialized_message))
+        await self._ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
         response_dict['address'] = address
@@ -174,7 +162,7 @@ class Connection:
         self._pending_responses[self._transaction_id] = pending_response
         serialized_message = serializer.serialize_write_multiple_registers(self._transaction_id, unit_address,
                                                                            first_address, data)
-        await self.ws.send_bytes(bytes.fromhex(serialized_message))
+        await self._ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
         response_dict['address'] = first_address
@@ -197,7 +185,7 @@ class Connection:
         self._pending_responses[self._transaction_id] = pending_response
         serialized_message = serializer.serialize_write_multiple_coils(self._transaction_id, unit_address,
                                                                        first_address, data)
-        await self.ws.send_bytes(bytes.fromhex(serialized_message))
+        await self._ws.send_bytes(bytes.fromhex(serialized_message))
         response_dict = await pending_response
         response_dict['raw_request'] = bytes.fromhex(serialized_message[16:])
         response_dict['address'] = first_address
@@ -209,6 +197,6 @@ class Connection:
         Awaits a message, deserializes it and puts it as a result of a corresponding pending future.
         """
         while True:
-            message = serializer.deserialize_message((await self.ws.receive()).data)
+            message = serializer.deserialize_message((await self._ws.receive()).data)
             if type(message) != str:
                 self._pending_responses[message['transaction_id']].set_result(message)
