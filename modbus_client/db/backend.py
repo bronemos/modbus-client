@@ -1,4 +1,6 @@
+import asyncio
 import sqlite3
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 
@@ -8,6 +10,7 @@ class Backend:
         """
         Used to connect to the database and create required tables if they don't exist yet.
         """
+        self.executor = ThreadPoolExecutor(max_workers=1)
         self.conn = sqlite3.connect('./db/historian.db', check_same_thread=False)
         self.cursor = self.conn.cursor()
         self.conn.execute('''CREATE TABLE IF NOT EXISTS request_history (
@@ -30,7 +33,8 @@ class Backend:
 
         self.conn.commit()
 
-    def insert_request_history(self, transaction_id: int, unit_address: int, function_code: int, raw_request: bytes):
+    async def insert_request_history(self, transaction_id: int, unit_address: int, function_code: int,
+                                     raw_request: bytes):
         """
         Inserts specified data into request history database table.
 
@@ -40,12 +44,17 @@ class Backend:
             function_code (int): Unique function code.
             raw_request (bytes): Request data in bytes format.
         """
-        self.cursor.execute('''INSERT INTO request_history
-                        VALUES (?, ?, ?, ?, ?);''',
-                            (datetime.now(), transaction_id, unit_address, function_code, raw_request))
-        self.conn.commit()
+        await asyncio.get_event_loop().run_in_executor(self.executor, lambda: self._ext_execute_insert_query(
+            'INSERT INTO request_history VALUES (?, ?, ?, ?, ?);',
+            (
+                datetime.now(),
+                transaction_id,
+                unit_address,
+                function_code,
+                raw_request)))
 
-    def insert_response_history(self, transaction_id: int, unit_address: int, function_code: int, raw_response: bytes):
+    async def insert_response_history(self, transaction_id: int, unit_address: int, function_code: int,
+                                      raw_response: bytes):
         """
         Inserts specified data into response history database table.
 
@@ -55,30 +64,43 @@ class Backend:
             function_code (int): Unique function code.
             raw_response (bytes): Request data in bytes format.
         """
-        self.cursor.execute('''INSERT INTO response_history 
-                        VALUES (?, ?, ?, ?, ?);''',
-                            (datetime.now(), transaction_id, unit_address,
-                             function_code, raw_response))
-        self.conn.commit()
+        await asyncio.get_event_loop().run_in_executor(self.executor, lambda: self._ext_execute_insert_query(
+            'INSERT INTO response_history VALUES (?, ?, ?, ?, ?);',
+            (
+                datetime.now(),
+                transaction_id,
+                unit_address,
+                function_code,
+                raw_response)))
 
-    def get_request_history(self) -> list:
+    async def get_request_history(self) -> list:
         """
         Fetches request history data from the database.
 
         Returns:
             rows (list): Rows of the request history table.
         """
-        self.cursor.execute('''SELECT * FROM request_history ORDER BY  transaction_timestamp''')
-        return self.cursor.fetchall()
+        return await asyncio.get_event_loop().run_in_executor(self.executor,
+                                                              lambda: self._ext_execute_select_query(
+                                                                  '''SELECT * FROM request_history ORDER BY  transaction_timestamp'''))
 
-    def get_response_history(self) -> list:
+    async def get_response_history(self) -> list:
         """
         Fetches response history data from the database.
 
         Returns:
             rows (list): Rows of the response history table.
         """
-        self.cursor.execute('''SELECT * FROM response_history ORDER BY  transaction_timestamp''')
+        return await asyncio.get_event_loop().run_in_executor(self.executor,
+                                                              lambda: self._ext_execute_select_query(
+                                                                  '''SELECT * FROM response_history ORDER BY  transaction_timestamp'''))
+
+    def _ext_execute_insert_query(self, query, values):
+        self.cursor.execute(query, values)
+        self.conn.commit()
+
+    def _ext_execute_select_query(self, query):
+        self.cursor.execute(query)
         return self.cursor.fetchall()
 
     def close(self):

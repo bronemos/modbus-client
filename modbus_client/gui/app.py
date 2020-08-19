@@ -12,6 +12,7 @@ class Application(QMainWindow):
         self.state_manager = state_manager
         self.state_manager.update.connect(self.update_gui)
 
+
         self.mainWidget = QWidget()
 
         self.HomeWidget = HomeWidget()
@@ -61,6 +62,7 @@ class Application(QMainWindow):
         self.state_manager.update_counter.connect(self.liveViewWidget.progressBar.setValue)
         self.state_manager.initiate_live_view_update.connect(self.liveViewWidget.update_view_request)
         self.state_manager.update_view.connect(self.liveViewWidget.update_view)
+        self.state_manager.update_historian.connect(self.historianWidget.load)
         p = self.liveViewWidget.palette()
         p.setColor(self.liveViewWidget.backgroundRole(), Qt.white)
         self.liveViewWidget.setPalette(p)
@@ -84,14 +86,14 @@ class Application(QMainWindow):
             self.liveViewWidget.setEnabled(self.connected)
             self.HomeWidget.connect_button.setText('Connecting...')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.connecting_movie)
-            self.state_manager.run_loop()
+            self.state_manager.user_req_queue.put('CONN')
         else:
             self.state_manager.user_req_queue.put('DC')
             self.update_gui('DC')
 
     def _switch_to_historian(self):
         if self.centerWidget.currentWidget() != self.historianWidget:
-            self.historianWidget.load(self.state_manager.backend)
+            self.state_manager.user_req_queue.put('update_historian')
             self.centerWidget.addWidget(self.historianWidget)
             self.centerWidget.setCurrentWidget(self.historianWidget)
             self.HomeWidget.live_button.setChecked(False)
@@ -120,7 +122,7 @@ class Application(QMainWindow):
         if self.centerWidget.currentWidget() == self.historianWidget:
             self.centerWidget.setCurrentWidget(self.reqresWidget)
             self.HomeWidget.historian_button.setChecked(False)
-        self.historianWidget.load(self.state_manager.backend)
+        self.state_manager.user_req_queue.put('update_historian')
         self.historianWidget.setParent(None)
         self.historianWidget.show()
 
@@ -162,7 +164,6 @@ class Application(QMainWindow):
             self.requestLogWidget.update_log(message)
             self.responseLogWidget.update_log(message)
             self.resWidget.update_response(message)
-            self.historianWidget.load(self.state_manager.backend)
 
     def closeEvent(self, event):
         super(Application, self).closeEvent(event)

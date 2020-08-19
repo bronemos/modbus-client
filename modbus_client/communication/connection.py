@@ -26,7 +26,9 @@ class Connection:
         self.session = aiohttp.ClientSession()
         self._ws = await self.session.ws_connect(
             'ws://' + ':'.join([conf['host'], conf['port']]) + '/ws')
-        return (await self._ws.receive()).data
+        response = (await self._ws.receive()).data
+        self.ws_reader_future = asyncio.ensure_future(self.ws_reader())
+        return response
 
     async def _read_writer(self, function_code: int, transaction_id: int, unit_address: int, first_address: int,
                            count: int) -> dict:

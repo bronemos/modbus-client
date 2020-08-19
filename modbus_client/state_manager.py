@@ -19,6 +19,7 @@ class StateManager(QObject):
     update_counter = Signal(int)
     initiate_live_view_update = Signal()
     update_view = Signal(dict)
+    update_historian = Signal(dict)
 
     def __init__(self, refresh_time=3):
         super(StateManager, self).__init__()
@@ -27,6 +28,7 @@ class StateManager(QObject):
         self.backend = Backend()
         self._executor = ThreadPoolExecutor(max_workers=1)
         self.current_state = dict()
+        self._connection = Connection()
 
     def run_loop(self):
         """
@@ -38,73 +40,82 @@ class StateManager(QObject):
         loop_thread.start()
 
     async def _state_manager_loop(self):
-        self._connection = Connection()
-        try:
-            connection_response = await self._connection.connect()
-            self.update.emit(connection_response)
-        except Exception:
-            self.update.emit('wstunnel_error')
-
         writer_future = asyncio.ensure_future(self._write_loop())
-        reader_future = asyncio.ensure_future(self._connection.ws_reader())
-        counter_future = asyncio.ensure_future(self._counter())
-        await asyncio.wait([writer_future, reader_future, counter_future], return_when=asyncio.FIRST_COMPLETED)
-        counter_future.cancel()
+        await asyncio.wait([writer_future, ], return_when=asyncio.FIRST_COMPLETED)
         writer_future.cancel()
-        reader_future.cancel()
 
     async def _write_loop(self):
         while True:
             message = await asyncio.get_event_loop().run_in_executor(self._executor, self._ext_get_message)
-            if message == 'DC':
-                self._disconnecting = True
-                self.update_counter.emit(0)
-                await self._connection.session.close()
-                return
+            if type(message) == str:
+                if message == 'CONN':
+                    print('here')
+                    try:
+                        connection_response = await self._connection.connect()
+                        self.update.emit(connection_response)
+                        if connection_response == 'ACK':
+                            self.counter_future = asyncio.ensure_future(self._counter())
+                    except Exception:
+                        self.update.emit('wstunnel_error')
+                elif message == 'DC':
+                    self._disconnecting = True
+                    self.update_counter.emit(0)
+                    await self._connection.session.close()
+                    self._connection.ws_reader_future.cancel()
+                    self.counter_future.cancel()
+                    self._disconnecting = False
 
-            if message['function_code'] == Codes.READ_COILS.value:
-                response = await self._connection.read_coils(message['unit_address'],
-                                                             message['address'], message['count'])
+                elif message == 'update_historian':
+                    self.update_historian.emit({'request_history': await self.backend.get_request_history(),
+                                                'response_history': await self.backend.get_response_history()})
 
-            elif message['function_code'] == Codes.READ_DISCRETE_INPUTS.value:
-                response = await self._connection.read_discrete_inputs(message['unit_address'],
-                                                                       message['address'], message['count'])
+            else:
 
-            elif message['function_code'] == Codes.READ_HOLDING_REGISTERS.value:
-                response = await self._connection.read_holding_registers(message['unit_address'],
-                                                                         message['address'], message['count'])
+                if message['function_code'] == Codes.READ_COILS.value:
+                    response = await self._connection.read_coils(message['unit_address'],
+                                                                 message['address'], message['count'])
 
-            elif message['function_code'] == Codes.READ_INPUT_REGISTERS.value:
-                response = await self._connection.read_input_registers(message['unit_address'],
-                                                                       message['address'], message['count'])
+                elif message['function_code'] == Codes.READ_DISCRETE_INPUTS.value:
+                    response = await self._connection.read_discrete_inputs(message['unit_address'],
+                                                                           message['address'], message['count'])
 
-            elif message['function_code'] == Codes.WRITE_SINGLE_COIL.value:
-                response = await self._connection.write_single_coil(message['unit_address'],
-                                                                    message['address'], message['status'])
+                elif message['function_code'] == Codes.READ_HOLDING_REGISTERS.value:
+                    response = await self._connection.read_holding_registers(message['unit_address'],
+                                                                             message['address'], message['count'])
 
-            elif message['function_code'] == Codes.WRITE_SINGLE_REGISTER.value:
-                response = await self._connection.write_single_register(message['unit_address'],
-                                                                        message['address'], message['data'])
+                elif message['function_code'] == Codes.READ_INPUT_REGISTERS.value:
+                    response = await self._connection.read_input_registers(message['unit_address'],
+                                                                           message['address'], message['count'])
 
-            elif message['function_code'] == Codes.WRITE_MULTIPLE_COILS.value:
-                response = await self._connection.write_multiple_coils(message['unit_address'],
-                                                                       message['address'], message['data'])
+                elif message['function_code'] == Codes.WRITE_SINGLE_COIL.value:
+                    response = await self._connection.write_single_coil(message['unit_address'],
+                                                                        message['address'], message['status'])
 
-            elif message['function_code'] == Codes.WRITE_MULTIPLE_REGISTERS.value:
-                response = await self._connection.write_multiple_registers(message['unit_address'],
+                elif message['function_code'] == Codes.WRITE_SINGLE_REGISTER.value:
+                    response = await self._connection.write_single_register(message['unit_address'],
+                                                                            message['address'], message['data'])
+
+                elif message['function_code'] == Codes.WRITE_MULTIPLE_COILS.value:
+                    response = await self._connection.write_multiple_coils(message['unit_address'],
                                                                            message['address'], message['data'])
 
-            if message['user_generated']:
-                try:
-                    self.backend.insert_request_history(response['transaction_id'], response['unit_address'],
-                                                        response['function_code'], response['raw_request'])
-                    self.backend.insert_response_history(response['transaction_id'], response['unit_address'],
-                                                         response['function_code'], response['raw_data'])
-                except Exception as e:
-                    print(e)
-                self.update.emit(response)
-            else:
-                self.update_view.emit(response)
+                elif message['function_code'] == Codes.WRITE_MULTIPLE_REGISTERS.value:
+                    response = await self._connection.write_multiple_registers(message['unit_address'],
+                                                                               message['address'], message['data'])
+
+                if message['user_generated']:
+                    try:
+                        await self.backend.insert_request_history(response['transaction_id'], response['unit_address'],
+                                                                  response['function_code'], response['raw_request'])
+                        await self.backend.insert_response_history(response['transaction_id'], response['unit_address'],
+                                                                   response['function_code'], response['raw_data'])
+                        self.update_historian.emit({'request_history': await self.backend.get_request_history(),
+                                                    'response_history': await self.backend.get_response_history()})
+                    except Exception as e:
+                        print(e)
+                    self.update.emit(response)
+                else:
+                    self.update_view.emit(response)
 
     async def _counter(self):
         while True:
