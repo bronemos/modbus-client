@@ -148,7 +148,6 @@ class Application(QMainWindow):
             self.liveViewWidget.setEnabled(self.connected)
             self.HomeWidget.connect_button.setText('Disconnect')
             self.HomeWidget.indicator.setMovie(self.HomeWidget.connected_movie)
-            return
         elif message == 'DC' or message == 1000 or message == 'wstunnel_error':
             self.connected = False
             self.HomeWidget.connect_button.setEnabled(True)
@@ -161,7 +160,6 @@ class Application(QMainWindow):
                 ErrorDialog(self, 'Make sure WSTunnel is running!')
             elif message == 1000:
                 ErrorDialog(self, 'Cannot connect to the device!')
-            return
         else:
             self.requestLogWidget.update_log(message)
             self.responseLogWidget.update_log(message)

@@ -37,7 +37,6 @@ class StateManager(QObject):
         """
         Initiates the loop thread of the state manager.
         """
-        self._disconnecting = False
         loop_thread = Thread(
             target=lambda: asyncio.new_event_loop().run_until_complete(self._write_loop()), daemon=True)
         loop_thread.start()
@@ -56,13 +55,13 @@ class StateManager(QObject):
                     except Exception:
                         self.update.emit('wstunnel_error')
                 elif message == 'DC':
-                    self._disconnecting = True
-                    self.update_counter.emit(0)
                     if self._connected:
                         await self._connection.close()
+                        #todo future not cancelling
                         self.counter_future.cancel()
-                    self._disconnecting = False
-                    return
+                        await self.counter_future
+                    self.update_counter.emit(0)
+                    self._connected = False
 
                 elif message == 'update_historian':
                     self.update_historian.emit({'request_history': await self.backend.get_request_history(),
@@ -127,8 +126,7 @@ class StateManager(QObject):
             self.initiate_live_view_update.emit()
             for i in range(1, 101):
                 await asyncio.sleep(self._refresh_time / 100)
-                if not self._disconnecting:
-                    self.update_counter.emit(i)
+                self.update_counter.emit(i)
 
     def _ext_get_message(self):
         return self.user_req_queue.get()
