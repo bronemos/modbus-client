@@ -20,6 +20,8 @@ class StateManager(QObject):
     initiate_live_view_update = Signal()
     update_view = Signal(dict)
     update_historian = Signal(dict)
+    export_response = Signal(list)
+    export_request = Signal(list)
 
     def __init__(self, refresh_time=3):
         super(StateManager, self).__init__()
@@ -68,6 +70,12 @@ class StateManager(QObject):
                 elif message == 'update_historian':
                     self.update_historian.emit({'request_history': await self.backend.get_request_history(),
                                                 'response_history': await self.backend.get_response_history()})
+
+                elif message == 'export_request':
+                    self.export_response.emit(await self.backend.get_request_history())
+
+                elif message == 'export_response':
+                    self.export_request.emit(await self.backend.get_response_history())
 
             else:
 

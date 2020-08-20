@@ -68,7 +68,6 @@ class HistorianWidget(QGroupBox):
         start = time()
         for response in responses:
             if response not in self.existing_responses:
-                print('here')
                 self.response_rows.insertRow(0)
                 timestamp = QStandardItem()
                 timestamp.setData(response[0], QtCore.Qt.EditRole)
@@ -122,8 +121,7 @@ class HistorianWidget(QGroupBox):
         print(time() - start)
         self.request_history.setSortingEnabled(True)
 
-    def export_request_history_to_csv(self, backend):
-        requests = backend.get_request_history()
+    def export_request_history_to_csv(self, requests):
         request_history = open('request_history.csv', 'w')
 
         with request_history:
@@ -131,11 +129,10 @@ class HistorianWidget(QGroupBox):
             write.writerow(self.request_header_labels)
             write.writerows(requests)
 
-    def export_response_history_to_csv(self, backend):
-        responses = backend.get_response_history()
+    def export_response_history_to_csv(self, responses):
         response_history = open('response_history.csv', 'w')
 
         with response_history:
             write = csv.writer(response_history)
-            write.writerows(self.response_header_labels)
+            write.writerow(self.response_header_labels)
             write.writerows(responses)
