@@ -202,5 +202,13 @@ class Connection:
         while True:
             with suppress(asyncio.CancelledError):
                 message = serializer.deserialize_message((await self._ws.receive()).data)
-            if type(message) != str:
-                self._pending_responses[message['transaction_id']].set_result(message)
+                if type(message) != str:
+                    self._pending_responses[message['transaction_id']].set_result(message)
+
+    async def close(self):
+        """
+        Closes the connection and cancels the future.
+        """
+        self.ws_reader_future.cancel()
+        await self.ws_reader_future
+        await self.session.close()

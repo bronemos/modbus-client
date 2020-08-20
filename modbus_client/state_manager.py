@@ -38,20 +38,14 @@ class StateManager(QObject):
         """
         self._disconnecting = False
         loop_thread = Thread(
-            target=lambda: asyncio.new_event_loop().run_until_complete(self._state_manager_loop()), daemon=True)
+            target=lambda: asyncio.new_event_loop().run_until_complete(self._write_loop()), daemon=True)
         loop_thread.start()
-
-    async def _state_manager_loop(self):
-        writer_future = asyncio.ensure_future(self._write_loop())
-        await asyncio.wait([writer_future, ], return_when=asyncio.FIRST_COMPLETED)
-        writer_future.cancel()
 
     async def _write_loop(self):
         while True:
             message = await asyncio.get_event_loop().run_in_executor(self._executor, self._ext_get_message)
             if type(message) == str:
                 if message == 'CONN':
-                    print('here')
                     try:
                         connection_response = await self._connection.connect()
                         self.update.emit(connection_response)
@@ -62,10 +56,10 @@ class StateManager(QObject):
                 elif message == 'DC':
                     self._disconnecting = True
                     self.update_counter.emit(0)
-                    await self._connection.session.close()
-                    self._connection.ws_reader_future.cancel()
+                    await self._connection.close()
                     self.counter_future.cancel()
                     self._disconnecting = False
+                    return
 
                 elif message == 'update_historian':
                     self.update_historian.emit({'request_history': await self.backend.get_request_history(),

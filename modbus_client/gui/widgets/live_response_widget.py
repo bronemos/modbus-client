@@ -14,7 +14,7 @@ class LiveResponseWidget(QWidget):
         self.table.setSortingEnabled(True)
         self.table.verticalHeader().hide()
         self.table.setItemDelegate(CenterDelegate())
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        #self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         header_labels = ['Address', 'Data']

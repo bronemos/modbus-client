@@ -16,7 +16,7 @@ class RequestLogWidget(QGroupBox):
         self.table.setSortingEnabled(True)
         self.table.verticalHeader().hide()
         self.table.setItemDelegate(CenterDelegate())
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        #self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'Data']
