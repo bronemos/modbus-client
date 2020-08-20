@@ -31,6 +31,7 @@ class StateManager(QObject):
         self._executor = ThreadPoolExecutor(max_workers=1)
         self.current_state = dict()
         self._connection = Connection()
+        self._connected = False
 
     def run_loop(self):
         """
@@ -51,13 +52,15 @@ class StateManager(QObject):
                         self.update.emit(connection_response)
                         if connection_response == 'ACK':
                             self.counter_future = asyncio.ensure_future(self._counter())
+                            self._connected = True
                     except Exception:
                         self.update.emit('wstunnel_error')
                 elif message == 'DC':
                     self._disconnecting = True
                     self.update_counter.emit(0)
-                    await self._connection.close()
-                    self.counter_future.cancel()
+                    if self._connected:
+                        await self._connection.close()
+                        self.counter_future.cancel()
                     self._disconnecting = False
                     return
 
