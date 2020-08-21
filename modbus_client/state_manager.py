@@ -68,6 +68,7 @@ class StateManager(QObject):
                         await self._connection.close()
                         self.counter_future.cancel()
                         await self.counter_future
+                    await self.backend.close()
                     return
 
                 elif message == 'update_historian':

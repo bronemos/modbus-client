@@ -103,8 +103,8 @@ class Backend:
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-    def close(self):
+    async def close(self):
         """
         Closes the database connection.
         """
-        self.conn.close()
+        await asyncio.get_event_loop().run_in_executor(self.executor, lambda: self.conn.close())
