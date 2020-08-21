@@ -81,6 +81,8 @@ class StateManager(QObject):
                 elif message == 'export_response':
                     self.export_request.emit(await self.backend.get_response_history())
 
+            elif type(message) == int:
+                self._refresh_time = message
             else:
 
                 if message['function_code'] == Codes.READ_COILS.value:

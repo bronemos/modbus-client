@@ -82,3 +82,25 @@ class CenterDelegate(QItemDelegate):
     def paint(self, painter, option, index):
         option.displayAlignment = Qt.AlignCenter
         QItemDelegate.paint(self, painter, option, index)
+
+
+class FancySlider(QWidget):
+
+    def __init__(self, min_value, max_value, initial_value):
+        super(FancySlider, self).__init__()
+        self.slider = QSlider(Qt.Horizontal)
+        self.slider.setValue(initial_value)
+        self.slider.setMaximum(max_value)
+        self.slider.setMinimum(min_value)
+        layout = QVBoxLayout()
+        values_layout = QHBoxLayout()
+        values_layout.addWidget(QLabel(str(min_value)))
+        values_layout.addStretch()
+        self.curr_value = QLabel(str(initial_value))
+        values_layout.addWidget(self.curr_value)
+        values_layout.addStretch()
+        values_layout.addWidget(QLabel(str(max_value)))
+        layout.addWidget(self.slider)
+        layout.addLayout(values_layout)
+        self.setLayout(layout)
+

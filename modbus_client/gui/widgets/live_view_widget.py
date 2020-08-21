@@ -4,6 +4,7 @@ from PySide2.QtWidgets import *
 from modbus_client.gui.widgets.live_response_widget import LiveResponseWidget
 from modbus_client.gui.widgets.read_widgets import *
 from modbus_client.resources.codes import Codes
+from modbus_client.gui.style.custom_elements import FancySlider
 
 
 class LiveViewWidget(QGroupBox):
@@ -68,11 +69,15 @@ class LiveViewWidget(QGroupBox):
         self.progressBar.setMaximum(100)
         self.progressBar.setTextVisible(False)
 
+        self.fancy_slider = FancySlider(1, 60, 3)
+        self.fancy_slider.slider.valueChanged.connect(self.update_slider)
+
         layout.addWidget(read_coils, 0, 0)
         layout.addWidget(read_discrete_inputs, 0, 1)
         layout.addWidget(read_holding_registers, 0, 2)
         layout.addWidget(read_input_registers, 0, 3)
-        layout.addWidget(self.progressBar, 1, 0, -1, -1)
+        layout.addWidget(self.progressBar, 1, 0, 1, -1)
+        layout.addWidget(self.fancy_slider, 2, 1, -1, 2)
 
         self.setLayout(layout)
 
@@ -103,3 +108,7 @@ class LiveViewWidget(QGroupBox):
             self.ReadHoldingRegistersResponse.refresh(message)
         else:
             self.ReadInputRegistersResponse.refresh(message)
+
+    def update_slider(self):
+        self.req_queue.put(self.fancy_slider.slider.value())
+        self.fancy_slider.curr_value.setText(str(self.fancy_slider.slider.value()))
