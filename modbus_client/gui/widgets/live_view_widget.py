@@ -1,10 +1,10 @@
 from PySide2 import QtCore
 from PySide2.QtWidgets import *
 
+from modbus_client.gui.style.custom_elements import FancySlider
 from modbus_client.gui.widgets.live_response_widget import LiveResponseWidget
 from modbus_client.gui.widgets.read_widgets import *
 from modbus_client.resources.codes import Codes
-from modbus_client.gui.style.custom_elements import FancySlider
 
 
 class LiveViewWidget(QGroupBox):
@@ -111,4 +111,4 @@ class LiveViewWidget(QGroupBox):
 
     def update_slider(self):
         self.req_queue.put(self.fancy_slider.slider.value())
-        self.fancy_slider.curr_value.setText(str(self.fancy_slider.slider.value()))
+        self.fancy_slider.curr_value.setText(str(self.fancy_slider.slider.value()) + 's')
