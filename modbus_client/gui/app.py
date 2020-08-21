@@ -169,7 +169,7 @@ class Application(QMainWindow):
         super(Application, self).closeEvent(event)
         self.liveViewWidget.close()
         self.historianWidget.close()
-        self.state_manager.user_req_queue.put('DC')
+        self.state_manager.user_req_queue.put('close')
         event.accept()
 
 

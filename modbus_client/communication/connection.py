@@ -199,8 +199,8 @@ class Connection:
         """
         Awaits a message, deserializes it and puts it as a result of a corresponding pending future.
         """
-        while True:
-            with suppress(asyncio.CancelledError):
+        with suppress(asyncio.CancelledError):
+            while True:
                 message = serializer.deserialize_message((await self._ws.receive()).data)
                 if type(message) != str:
                     self._pending_responses[message['transaction_id']].set_result(message)

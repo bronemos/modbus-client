@@ -1,5 +1,6 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import suppress
 from queue import Queue
 from threading import Thread
 
@@ -57,11 +58,17 @@ class StateManager(QObject):
                 elif message == 'DC':
                     if self._connected:
                         await self._connection.close()
-                        #todo future not cancelling
                         self.counter_future.cancel()
                         await self.counter_future
                     self.update_counter.emit(0)
                     self._connected = False
+
+                elif message == 'close':
+                    if self._connected:
+                        await self._connection.close()
+                        self.counter_future.cancel()
+                        await self.counter_future
+                    return
 
                 elif message == 'update_historian':
                     self.update_historian.emit({'request_history': await self.backend.get_request_history(),
@@ -122,11 +129,12 @@ class StateManager(QObject):
                     self.update_view.emit(response)
 
     async def _counter(self):
-        while True:
-            self.initiate_live_view_update.emit()
-            for i in range(1, 101):
-                await asyncio.sleep(self._refresh_time / 100)
-                self.update_counter.emit(i)
+        with suppress(asyncio.CancelledError):
+            while True:
+                self.initiate_live_view_update.emit()
+                for i in range(1, 101):
+                    await asyncio.sleep(self._refresh_time / 100)
+                    self.update_counter.emit(i)
 
     def _ext_get_message(self):
         return self.user_req_queue.get()
