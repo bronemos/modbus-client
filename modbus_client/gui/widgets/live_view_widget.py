@@ -1,5 +1,5 @@
 from PySide2 import QtCore
-from PySide2.QtGui import QPixmap
+from PySide2.QtCore import Signal
 from PySide2.QtWidgets import *
 
 from modbus_client.gui.style.custom_elements import FancySlider
@@ -9,6 +9,7 @@ from modbus_client.resources.codes import Codes
 
 
 class LiveViewWidget(QGroupBox):
+    live_error = Signal(bool)
 
     def __init__(self, req_queue):
         super(LiveViewWidget, self).__init__()
@@ -87,18 +88,30 @@ class LiveViewWidget(QGroupBox):
             read_coils_message = self.ReadCoilsWidget.generate_message()
             read_coils_message['user_generated'] = False
             self.req_queue.put(read_coils_message)
+        else:
+            self.req_queue.put('pause_refresh')
+            self.fancy_slider.pause_button.setChecked(False)
         if self.ReadDiscreteInputsWidget.validate_input(self):
             read_discrete_inputs_message = self.ReadDiscreteInputsWidget.generate_message()
             read_discrete_inputs_message['user_generated'] = False
             self.req_queue.put(read_discrete_inputs_message)
+        else:
+            self.req_queue.put('pause_refresh')
+            self.fancy_slider.pause_button.setChecked(False)
         if self.ReadHoldingRegistersWidget.validate_input(self):
             read_holding_registers_message = self.ReadHoldingRegistersWidget.generate_message()
             read_holding_registers_message['user_generated'] = False
             self.req_queue.put(read_holding_registers_message)
+        else:
+            self.req_queue.put('pause_refresh')
+            self.fancy_slider.pause_button.setChecked(False)
         if self.ReadInputRegistersWidget.validate_input(self):
             read_input_registers_message = self.ReadInputRegistersWidget.generate_message()
             read_input_registers_message['user_generated'] = False
             self.req_queue.put(read_input_registers_message)
+        else:
+            self.req_queue.put('pause_refresh')
+            self.fancy_slider.pause_button.setChecked(False)
 
     def update_view(self, message):
         if message['function_code'] == Codes.READ_COILS.value:

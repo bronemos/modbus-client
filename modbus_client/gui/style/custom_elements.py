@@ -68,6 +68,7 @@ class ErrorDialog(QDialog):
 
     def __init__(self, parent, error_message):
         super(ErrorDialog, self).__init__(parent)
+        self.setWindowModality(Qt.WindowModal)
         self.setWindowTitle('Error!')
         self.button = QPushButton('OK')
         self.button.clicked.connect(self.close)
@@ -75,7 +76,7 @@ class ErrorDialog(QDialog):
         self.layout.addWidget(QLabel(error_message))
         self.layout.addWidget(self.button)
         self.setLayout(self.layout)
-        self.exec_()
+        self.show()
 
 
 class CenterDelegate(QItemDelegate):

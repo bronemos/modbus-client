@@ -34,6 +34,8 @@ class StateManager(QObject):
         self._connection = Connection()
         self._connected = False
         self._pause_refresh = False
+        self._pause_future = asyncio.Future()
+        self._pause_future.set_result(True)
 
     def run_loop(self):
         """
@@ -83,6 +85,10 @@ class StateManager(QObject):
                     self.export_request.emit(await self.backend.get_response_history())
 
                 elif message == 'pause_refresh':
+                    if not self._pause_future.done():
+                        self._pause_future.set_result(True)
+                    else:
+                        self._pause_future = asyncio.Future()
                     self._pause_refresh = not self._pause_refresh
                     self.update_counter.emit(0)
 
@@ -139,14 +145,13 @@ class StateManager(QObject):
     async def _counter(self):
         with suppress(asyncio.CancelledError):
             while True:
-                if not self._pause_refresh:
-                    self.initiate_live_view_update.emit()
+                await self._pause_future
+                self.initiate_live_view_update.emit()
                 for i in range(1, 101):
                     await asyncio.sleep(self._refresh_time / 100)
-                    if self._pause_refresh:
+                    if not self._pause_future.done():
                         break
-                    if not self._pause_refresh:
-                        self.update_counter.emit(i)
+                    self.update_counter.emit(i)
 
     def _ext_get_message(self):
         return self.user_req_queue.get()

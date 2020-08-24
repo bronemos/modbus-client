@@ -1,11 +1,11 @@
 import csv
-from time import time
 
-from PySide2 import QtCore
-from PySide2.QtWidgets import *
+from PySide2 import QtCore, QtGui
 from PySide2.QtGui import QStandardItemModel, QStandardItem
+from PySide2.QtWidgets import *
 
 from modbus_client.gui.style.custom_elements import CenterDelegate
+from modbus_client.resources.codes import ErrorCodes
 
 
 class HistorianWidget(QGroupBox):
@@ -26,7 +26,7 @@ class HistorianWidget(QGroupBox):
         self.request_history.setSortingEnabled(True)
         # self.request_history.verticalHeader().hide()
         self.request_history.setItemDelegate(CenterDelegate())
-        #self.request_history.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        # self.request_history.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.request_history.horizontalHeader().setStretchLastSection(True)
         self.request_history.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.request_header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'Data']
@@ -44,7 +44,7 @@ class HistorianWidget(QGroupBox):
         self.response_history.setSortingEnabled(True)
         # self.response_history.verticalHeader().hide()
         self.response_history.setItemDelegate(CenterDelegate())
-        #self.response_history.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        # self.response_history.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.response_history.horizontalHeader().setStretchLastSection(True)
         self.response_history.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.response_header_labels = ['Timestamp', 'Transaction ID', 'Unit Address', 'Function Code', 'Data']
@@ -82,6 +82,14 @@ class HistorianWidget(QGroupBox):
                 data = QStandardItem()
                 data.setData(str(response[4]), QtCore.Qt.EditRole)
                 self.response_rows.setItem(0, 4, data)
+                if response[3] in [x.value for x in ErrorCodes]:
+                    error_color = QtGui.QColor(255, 114, 111)
+                    timestamp.setBackground(error_color)
+                    transaction_id.setBackground(error_color)
+                    unit_address.setBackground(error_color)
+                    function_code.setBackground(error_color)
+                    data.setBackground(error_color)
+
         self.response_history.setModel(self.response_rows)
 
         self.existing_responses = self.existing_responses | set(responses)
@@ -107,6 +115,13 @@ class HistorianWidget(QGroupBox):
                 data = QStandardItem()
                 data.setData(str(request[4]), QtCore.Qt.EditRole)
                 self.request_rows.setItem(0, 4, data)
+                if request[3] in [x.value for x in ErrorCodes]:
+                    error_color = QtGui.QColor(255, 114, 111)
+                    timestamp.setBackground(error_color)
+                    transaction_id.setBackground(error_color)
+                    unit_address.setBackground(error_color)
+                    function_code.setBackground(error_color)
+                    data.setBackground(error_color)
 
         self.request_history.setModel(self.request_rows)
 
