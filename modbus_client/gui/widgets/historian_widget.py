@@ -1,4 +1,5 @@
 import csv
+from contextlib import suppress
 
 from PySide2 import QtCore, QtGui
 from PySide2.QtGui import QStandardItemModel, QStandardItem
@@ -129,17 +130,19 @@ class HistorianWidget(QGroupBox):
         self.request_history.setSortingEnabled(True)
 
     def export_request_history_to_csv(self, requests):
-        request_history = open('request_history.csv', 'w')
-
-        with request_history:
-            write = csv.writer(request_history)
-            write.writerow(self.request_header_labels)
-            write.writerows(requests)
+        with suppress(FileNotFoundError):
+            request_history_name = QFileDialog.getSaveFileName(self, 'Save file', '/request_history.csv', 'CSV (*.csv)')
+            request_history = open(request_history_name[0], 'w')
+            with request_history:
+                write = csv.writer(request_history)
+                write.writerow(self.request_header_labels)
+                write.writerows(requests)
 
     def export_response_history_to_csv(self, responses):
-        response_history = open('response_history.csv', 'w')
-
-        with response_history:
-            write = csv.writer(response_history)
-            write.writerow(self.response_header_labels)
-            write.writerows(responses)
+        with suppress(FileNotFoundError):
+            response_history_name = QFileDialog.getSaveFileName(self, 'Save file', 'response_history', '.csv')
+            response_history = open(response_history_name[0], 'w')
+            with response_history:
+                write = csv.writer(response_history)
+                write.writerow(self.response_header_labels)
+                write.writerows(responses)

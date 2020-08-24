@@ -1,4 +1,5 @@
 import csv
+from contextlib import suppress
 
 from modbus_client.gui.style.custom_elements import *
 
@@ -20,12 +21,13 @@ class DefaultWWidget(QWidget):
         self.layout.addRow('Unit address: ', self.unitAddress)
 
     def import_csv(self):
-        file_name = QFileDialog.getOpenFileName(self, 'Open data csv', '/home')
-        with open(file_name[0]) as input_csv:
-            self.data_list = list()
-            reader = csv.reader(input_csv)
-            for row in reader:
-                self.data_list.extend(row)
+        with suppress(FileNotFoundError):
+            file_name = QFileDialog.getOpenFileName(self, 'Open data csv', '/home')
+            with open(file_name[0]) as input_csv:
+                self.data_list = list()
+                reader = csv.reader(input_csv)
+                for row in reader:
+                    self.data_list.extend(row)
 
         if len(self.data_list) > 0:
             self.csv_imported = True
