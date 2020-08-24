@@ -60,6 +60,7 @@ class Application(QMainWindow):
             lambda: self.state_manager.user_req_queue.put('export_response'))
         self.liveViewWidget = LiveViewWidget(self.state_manager.user_req_queue)
         self.state_manager.update_counter.connect(self.liveViewWidget.progressBar.setValue)
+        self.liveViewWidget.fancy_slider.pause_button.clicked.connect(lambda: self.state_manager.user_req_queue.put('pause_refresh'))
         self.state_manager.initiate_live_view_update.connect(self.liveViewWidget.update_view_request)
         self.state_manager.update_view.connect(self.liveViewWidget.update_view)
         self.state_manager.update_historian.connect(self.historianWidget.load)

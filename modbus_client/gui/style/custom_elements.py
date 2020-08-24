@@ -1,6 +1,7 @@
 import PySide2
 from PySide2 import QtGui
 from PySide2.QtCore import *
+from PySide2.QtGui import QPixmap
 from PySide2.QtWidgets import *
 
 
@@ -96,6 +97,12 @@ class FancySlider(QWidget):
         values_layout = QHBoxLayout()
         values_layout.addWidget(QLabel(str(min_value) + 's'))
         values_layout.addStretch()
+        self.pause_button = QPushButton()
+        self.pause_button.setCheckable(True)
+        self.pause_button.setChecked(True)
+        pause_pixmap = QPixmap('../modbus_client/resources/pause.png')
+        self.pause_button.setIcon(pause_pixmap)
+        values_layout.addWidget(self.pause_button)
         self.curr_value = QLabel(str(initial_value) + 's')
         values_layout.addWidget(self.curr_value)
         values_layout.addStretch()

@@ -1,4 +1,5 @@
 from PySide2 import QtCore
+from PySide2.QtGui import QPixmap
 from PySide2.QtWidgets import *
 
 from modbus_client.gui.style.custom_elements import FancySlider
@@ -77,7 +78,7 @@ class LiveViewWidget(QGroupBox):
         layout.addWidget(read_holding_registers, 0, 2)
         layout.addWidget(read_input_registers, 0, 3)
         layout.addWidget(self.progressBar, 1, 0, 1, -1)
-        layout.addWidget(self.fancy_slider, 2, 1, -1, 2)
+        layout.addWidget(self.fancy_slider, 2, 1, 1, 2)
 
         self.setLayout(layout)
 

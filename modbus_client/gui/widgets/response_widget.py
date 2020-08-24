@@ -1,8 +1,9 @@
 from PySide2.QtCore import Qt
+from PySide2.QtGui import QPixmap
 from PySide2.QtWidgets import *
 
 from modbus_client.gui.widgets.live_response_widget import LiveResponseWidget
-from modbus_client.resources.codes import Codes
+from modbus_client.resources.codes import ErrorCodes
 
 
 class ResponseWidget(QGroupBox):
@@ -10,27 +11,43 @@ class ResponseWidget(QGroupBox):
     def __init__(self):
         super(ResponseWidget, self).__init__('RESPONSE')
         self.response = LiveResponseWidget()
-        reslayout = QVBoxLayout()
-        reslayout.addWidget(self.response)
+
+        self.response_widget = QWidget()
+        widget_layout = QVBoxLayout()
+        self.response_label = QLabel()
+        self.response_image = QLabel()
+        self.response_image.setAlignment(Qt.AlignCenter)
+        widget_layout.addWidget(self.response_image)
+        widget_layout.addWidget(self.response_label)
+        self.response_widget.setLayout(widget_layout)
+        self.success = QPixmap('../modbus_client/resources/success1.png')
+        self.error = QPixmap('../modbus_client/resources/error.png')
+        self.response_label.setAlignment(Qt.AlignCenter)
+        self.reslayout = QStackedLayout()
+        self.reslayout.addWidget(self.response_widget)
+        self.reslayout.addWidget(self.response)
         self.setAlignment(Qt.AlignCenter)
-        self.setLayout(reslayout)
+        self.setLayout(self.reslayout)
 
     def update_response(self, message):
         if message['function_code'] <= 4:
             self.response.refresh(message)
-
-    def update_response_old(self, message):
-        if (current_selection := message['function_code']) <= 4:
-            if current_selection == Codes.READ_COILS.value:
-                self.res_message.setText(
-                    f"Coils set are: {','.join(str(x) for x in message['status_list'])}" if len(message['status_list'])
-                    else 'No coils are set')
-            elif current_selection == Codes.READ_DISCRETE_INPUTS.value:
-                self.res_message.setText(
-                    f"Discrete inputs status: {','.join(str(x) for x in message['status_list'])}" if len(
-                        message['status_list'])
-                    else 'No discrete inputs are set.')
-            elif current_selection == Codes.READ_HOLDING_REGISTERS.value:
-                self.res_message.setText(f"Holding registers data: {','.join(message['register_data'])}")
-            elif current_selection == Codes.READ_INPUT_REGISTERS.value:
-                self.res_message.setText(f"Input registers data: {','.join(message['register_data'])}")
+            self.reslayout.setCurrentWidget(self.response)
+        elif message['function_code'] in [item.value for item in ErrorCodes]:
+            self.response_image.setPixmap(self.error.scaled(50, 50, Qt.KeepAspectRatio))
+            error_code = int.from_bytes(message['raw_data'], 'little')
+            if error_code == 1:
+                self.response_label.setText('Error!\n\nIllegal function!')
+            elif error_code == 2:
+                self.response_label.setText('Error!\n\nIllegal data address!')
+            elif error_code == 3:
+                self.response_label.setText('Error!\n\nIllegal data value!')
+            else:
+                self.response_label.setText('Error!\n\nSlave device failure!')
+            self.response_label.setStyleSheet('color: rgb(240, 0, 0); font-weight: 500')
+            self.reslayout.setCurrentWidget(self.response_widget)
+        else:
+            self.response_image.setPixmap(self.success.scaled(50, 50, Qt.KeepAspectRatio))
+            self.response_label.setStyleSheet('color: rgb(119, 188, 31); font-weight: 500')
+            self.response_label.setText('Success!')
+            self.reslayout.setCurrentWidget(self.response_widget)

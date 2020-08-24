@@ -33,6 +33,7 @@ class StateManager(QObject):
         self.current_state = dict()
         self._connection = Connection()
         self._connected = False
+        self._pause_refresh = False
 
     def run_loop(self):
         """
@@ -80,6 +81,10 @@ class StateManager(QObject):
 
                 elif message == 'export_response':
                     self.export_request.emit(await self.backend.get_response_history())
+
+                elif message == 'pause_refresh':
+                    self._pause_refresh = not self._pause_refresh
+                    self.update_counter.emit(0)
 
             elif type(message) == int:
                 self._refresh_time = message
@@ -134,10 +139,14 @@ class StateManager(QObject):
     async def _counter(self):
         with suppress(asyncio.CancelledError):
             while True:
-                self.initiate_live_view_update.emit()
+                if not self._pause_refresh:
+                    self.initiate_live_view_update.emit()
                 for i in range(1, 101):
                     await asyncio.sleep(self._refresh_time / 100)
-                    self.update_counter.emit(i)
+                    if self._pause_refresh:
+                        break
+                    if not self._pause_refresh:
+                        self.update_counter.emit(i)
 
     def _ext_get_message(self):
         return self.user_req_queue.get()
