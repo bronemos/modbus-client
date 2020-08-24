@@ -131,7 +131,8 @@ class HistorianWidget(QGroupBox):
 
     def export_request_history_to_csv(self, requests):
         with suppress(FileNotFoundError):
-            request_history_name = QFileDialog.getSaveFileName(self, 'Save file', '/request_history.csv', 'CSV (*.csv)')
+            request_history_name = QFileDialog.getSaveFileName(self, 'Save file', '/home/bernard/request_history.csv', 'CSV (*.csv)',
+                                                               options=QFileDialog.DontUseNativeDialog)
             request_history = open(request_history_name[0], 'w')
             with request_history:
                 write = csv.writer(request_history)
@@ -140,7 +141,8 @@ class HistorianWidget(QGroupBox):
 
     def export_response_history_to_csv(self, responses):
         with suppress(FileNotFoundError):
-            response_history_name = QFileDialog.getSaveFileName(self, 'Save file', 'response_history', '.csv')
+            response_history_name = QFileDialog.getSaveFileName(self, 'Save file', '/home/bernard/response_history', '.csv',
+                                                                options=QFileDialog.DontUseNativeDialog)
             response_history = open(response_history_name[0], 'w')
             with response_history:
                 write = csv.writer(response_history)

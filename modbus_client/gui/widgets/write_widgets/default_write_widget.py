@@ -22,7 +22,8 @@ class DefaultWWidget(QWidget):
 
     def import_csv(self):
         with suppress(FileNotFoundError):
-            file_name = QFileDialog.getOpenFileName(self, 'Open data csv', '/home')
+            file_name = QFileDialog.getOpenFileName(self, 'Open data csv', '/home', 'CSV (*.csv)',
+                                                    options=QFileDialog.DontUseNativeDialog)
             with open(file_name[0]) as input_csv:
                 self.data_list = list()
                 reader = csv.reader(input_csv)
