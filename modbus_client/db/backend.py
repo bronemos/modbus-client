@@ -1,4 +1,5 @@
 import asyncio
+import os
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
@@ -11,7 +12,8 @@ class Backend:
         Used to connect to the database and create required tables if they don't exist yet.
         """
         self.executor = ThreadPoolExecutor(max_workers=1)
-        self.conn = sqlite3.connect('./db/historian.db', check_same_thread=False)
+        path = os.path.abspath(__file__ + '/../')
+        self.conn = sqlite3.connect(path + '/historian.db', check_same_thread=False)
         self.cursor = self.conn.cursor()
         self.conn.execute('''CREATE TABLE IF NOT EXISTS request_history (
                       transaction_timestamp TIMESTAMP,
