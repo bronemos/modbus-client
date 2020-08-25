@@ -1,3 +1,5 @@
+import os
+
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QPixmap
 from PySide2.QtWidgets import *
@@ -20,8 +22,9 @@ class ResponseWidget(QGroupBox):
         widget_layout.addWidget(self.response_image)
         widget_layout.addWidget(self.response_label)
         self.response_widget.setLayout(widget_layout)
-        self.success = QPixmap('../modbus_client/resources/success1.png')
-        self.error = QPixmap('../modbus_client/resources/error.png')
+        path = os.path.abspath(__file__ + '/../../../resources')
+        self.success = QPixmap(path + '/success1.png')
+        self.error = QPixmap(path + '/error.png')
         self.response_label.setAlignment(Qt.AlignCenter)
         self.reslayout = QStackedLayout()
         self.reslayout.addWidget(self.response_widget)

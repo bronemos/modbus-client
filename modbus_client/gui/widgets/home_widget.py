@@ -1,5 +1,6 @@
+import os
+
 from PySide2 import QtCore
-from PySide2.QtGui import QPixmap
 
 from modbus_client.gui.style.custom_elements import *
 
@@ -13,9 +14,10 @@ class HomeWidget(QWidget):
         self.historian_button.setCheckable(True)
         self.live_button = QPushButton('Live View')
         self.live_button.setCheckable(True)
-        self.disconnected_movie = QtGui.QMovie('../modbus_client/resources/disconnected.gif')
-        self.connecting_movie = QtGui.QMovie('../modbus_client/resources/connecting.gif')
-        self.connected_movie = QtGui.QMovie('../modbus_client/resources/connected.gif')
+        path = os.path.abspath(__file__ + '/../../../resources')
+        self.disconnected_movie = QtGui.QMovie(path + '/disconnected.gif')
+        self.connecting_movie = QtGui.QMovie(path + '/connecting.gif')
+        self.connected_movie = QtGui.QMovie(path + '/connected.gif')
         self.disconnected_movie.setScaledSize(QSize(50, 50))
         self.connecting_movie.setScaledSize(QSize(50, 50))
         self.connected_movie.setScaledSize(QSize(50, 50))
@@ -27,7 +29,7 @@ class HomeWidget(QWidget):
         self.connecting_movie.start()
 
         self.live_popup = QPushButton()
-        live_pixmap = QPixmap('../modbus_client/resources/popup.png')
+        live_pixmap = QPixmap(path + '/popup.png')
         self.live_popup.setIcon(live_pixmap)
         self.live_popup.resize(live_pixmap.rect().size())
         live_layout = QHBoxLayout()
@@ -35,7 +37,7 @@ class HomeWidget(QWidget):
         live_layout.addWidget(self.live_popup)
 
         self.historian_popup = QPushButton()
-        historian_pixmap = QPixmap('../modbus_client/resources/popup.png')
+        historian_pixmap = QPixmap(path + '/popup.png')
         self.historian_popup.setIcon(historian_pixmap)
         self.historian_popup.resize(historian_pixmap.rect().size())
         historian_layout = QHBoxLayout()

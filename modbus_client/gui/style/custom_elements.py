@@ -1,3 +1,5 @@
+import os
+
 import PySide2
 from PySide2 import QtGui
 from PySide2.QtCore import *
@@ -101,7 +103,8 @@ class FancySlider(QWidget):
         self.pause_button = QPushButton()
         self.pause_button.setCheckable(True)
         self.pause_button.setChecked(True)
-        pause_pixmap = QPixmap('../modbus_client/resources/pause.png')
+        path = os.path.abspath(__file__+'/../../../resources')
+        pause_pixmap = QPixmap(path + '/pause.png')
         self.pause_button.setIcon(pause_pixmap)
         values_layout.addWidget(self.pause_button)
         self.curr_value = QLabel(str(initial_value) + 's')
