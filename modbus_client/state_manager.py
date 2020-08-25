@@ -79,10 +79,10 @@ class StateManager(QObject):
                                                 'response_history': await self.backend.get_response_history()})
 
                 elif message == 'export_request':
-                    self.export_response.emit(await self.backend.get_request_history())
+                    self.export_request.emit(await self.backend.get_request_history())
 
                 elif message == 'export_response':
-                    self.export_request.emit(await self.backend.get_response_history())
+                    self.export_response.emit(await self.backend.get_response_history())
 
                 elif message == 'pause_refresh':
                     if not self._pause_future.done():

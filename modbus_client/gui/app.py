@@ -65,7 +65,7 @@ class Application(QMainWindow):
         self.state_manager.update_view.connect(self.liveViewWidget.update_view)
         self.state_manager.update_historian.connect(self.historianWidget.load)
         self.state_manager.export_response.connect(self.historianWidget.export_response_history_to_csv)
-        self.state_manager.export_request.connect(self.historianWidget.export_response_history_to_csv)
+        self.state_manager.export_request.connect(self.historianWidget.export_request_history_to_csv)
         p = self.liveViewWidget.palette()
         p.setColor(self.liveViewWidget.backgroundRole(), Qt.white)
         self.liveViewWidget.setPalette(p)

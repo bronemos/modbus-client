@@ -1,4 +1,5 @@
 import csv
+import os
 from contextlib import suppress
 
 from PySide2 import QtCore, QtGui
@@ -131,7 +132,8 @@ class HistorianWidget(QGroupBox):
 
     def export_request_history_to_csv(self, requests):
         with suppress(FileNotFoundError):
-            request_history_name = QFileDialog.getSaveFileName(self, 'Save file', '/home/bernard/request_history.csv',
+            path = os.path.abspath(__file__ + '/../')
+            request_history_name = QFileDialog.getSaveFileName(self, 'Save file', path + '/request_history.csv',
                                                                'CSV (*.csv)',
                                                                options=QFileDialog.DontUseNativeDialog)
             request_history = open(request_history_name[0], 'w')
@@ -142,7 +144,8 @@ class HistorianWidget(QGroupBox):
 
     def export_response_history_to_csv(self, responses):
         with suppress(FileNotFoundError):
-            response_history_name = QFileDialog.getSaveFileName(self, 'Save file', '/home/bernard/response_history',
+            path = os.path.abspath(__file__ + '/../')
+            response_history_name = QFileDialog.getSaveFileName(self, 'Save file', path + '/response_history.csv',
                                                                 'CSV (*.csv)',
                                                                 options=QFileDialog.DontUseNativeDialog)
             response_history = open(response_history_name[0], 'w')
