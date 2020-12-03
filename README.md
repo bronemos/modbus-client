@@ -1,3 +1,3 @@
-# ModbusGUI_bernard_spiegl
+# ModbusGUI
 
 GUI Client for Modbus protocol.
